@@ -14,6 +14,8 @@ from skyscanner.skyscanner import Flights, Transport, FlightsCache, CarHire, Hot
 
 class TestCarHire(unittest.TestCase):
     def setUp(self):
+        # API Key that's meant for testing only
+        # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
         self.api_key = 'prtl6749387986743898559646983194'
         pass
 
@@ -70,6 +72,9 @@ class TestCarHire(unittest.TestCase):
 
 class TestHotels(unittest.TestCase):
     def setUp(self):
+        # API Key that's meant for testing only
+        # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
+
         self.api_key = 'prtl6749387986743898559646983194'
         pass
 
@@ -130,6 +135,9 @@ class TestHotels(unittest.TestCase):
 class TestFlights(unittest.TestCase):
 
     def setUp(self):
+        # API Key that's meant for testing only
+        # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
+        
         self.api_key = 'prtl6749387986743898559646983194'
         pass
 
