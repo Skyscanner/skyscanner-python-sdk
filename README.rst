@@ -3,7 +3,7 @@ Skyscanner Python SDK
 ===============================
 
 .. image:: https://img.shields.io/travis/ardydedase/skyscanner.svg
-        :target: https://travis-ci.org/ardydedase/skyscanner
+        :target: https://travis-ci.org/ardydedase/skyscanner-python-sdk
 
 .. image:: https://img.shields.io/pypi/v/skyscanner.svg
         :target: https://pypi.python.org/pypi/skyscanner
