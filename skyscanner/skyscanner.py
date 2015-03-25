@@ -104,12 +104,7 @@ class Flights(Transport):
 
         r = requests.put(poll_url, params=params)
 
-        print r
-
         headers = r.headers
-        print r.url
-        print poll_url
-        print "headers: %s" % headers
 
         return headers['location']
 
@@ -117,7 +112,6 @@ class Flights(Transport):
         """
         Get all Itineraries, no filtering, etc.
         """
-        print "params: %s" % params
 
         poll_url = self.create_session(**params)
         results = self.poll_session(poll_url, apiKey=self.api_key)
@@ -257,11 +251,7 @@ class CarHire(Transport):
         r = requests.get(
             service_url, params=params, headers=headers)
 
-        print "r.url: %s" % r.url
-
         headers = r.headers
-
-        print "headers: %s" % headers
 
         return headers['location']
 
@@ -269,11 +259,8 @@ class CarHire(Transport):
         """
         Get all Itineraries, no filtering, etc.
         """
-        print "params: %s" % params
 
         poll_path = self.create_session(**params)
-
-        print "poll_path: %s" % poll_path
 
         poll_url = "{url}{path}".format(
             url=self.BASE_URL,
@@ -346,11 +333,7 @@ class Hotels(Transport):
         r = requests.get(
             service_url, params=params, headers=headers)
 
-        print "r.url: %s" % r.url
-
         headers = r.headers
-
-        print "headers: %s" % headers
 
         return headers['location']
 
@@ -358,11 +341,8 @@ class Hotels(Transport):
         """
         Get all Itineraries, no filtering, etc.
         """
-        print "params: %s" % params
 
         poll_path = self.create_session(**params)
-
-        print "poll_path: %s" % poll_path
 
         poll_url = "{url}{path}".format(
             url=self.BASE_URL,
