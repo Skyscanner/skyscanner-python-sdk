@@ -110,7 +110,7 @@ class TestHotels(unittest.TestCase):
             guests=1, 
             rooms=1)
 
-        print result        
+        print(result)
 
     def test_create_session(self):
         """
@@ -130,14 +130,14 @@ class TestHotels(unittest.TestCase):
             driverage='30',
             userip='175.156.244.174')
 
-        print poll_url        
+        print(poll_url)
 
 class TestFlights(unittest.TestCase):
 
     def setUp(self):
         # API Key that's meant for testing only
         # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
-        
+
         self.api_key = 'prtl6749387986743898559646983194'
         pass
 
@@ -152,7 +152,7 @@ class TestFlights(unittest.TestCase):
             outbounddate='2015-05', 
             inbounddate='2015-06')
 
-        print "result: %s" % result
+        print("result: %s" % result)
 
 
     def test_get_cheapest_price_by_route(self):
@@ -166,7 +166,7 @@ class TestFlights(unittest.TestCase):
             outbounddate='2015-05', 
             inbounddate='2015-06')
 
-        print "result: %s" % result        
+        print("result: %s" % result)
 
 
     def test_get_cheapest_price_by_date(self):
@@ -180,7 +180,7 @@ class TestFlights(unittest.TestCase):
             outbounddate='2015-05', 
             inbounddate='2015-06')
 
-        print "result: %s" % result        
+        print("result: %s" % result)
 
     def test_get_grid_prices_by_date(self):
         flights_cache_service = FlightsCache(self.api_key)
@@ -193,7 +193,7 @@ class TestFlights(unittest.TestCase):
             outbounddate='2015-05', 
             inbounddate='2015-06')
 
-        print "result: %s" % result     
+        print("result: %s" % result)
 
 
     def test_create_session(self):
@@ -208,7 +208,7 @@ class TestFlights(unittest.TestCase):
             inbounddate='2015-05-31', 
             adults=1)
 
-        print "result: %s" % result        
+        print("result: %s" % result)
 
         pass
 
@@ -216,7 +216,7 @@ class TestFlights(unittest.TestCase):
         transport = Transport(self.api_key)
         result = transport.get_markets('en-GB')
 
-        print "result: %s" % result
+        print("result: %s" % result)
 
         pass
 
@@ -224,7 +224,7 @@ class TestFlights(unittest.TestCase):
         transport = Transport(self.api_key)
         result = transport.location_autosuggest('KUL', 'UK', 'GBP', 'en-GB')
 
-        print "result: %s" % result
+        print("result: %s" % result)
 
         pass
 
@@ -242,9 +242,6 @@ class TestFlights(unittest.TestCase):
             adults=1)
 
         result = flights_service.poll_session(poll_url, sorttype='carrier')
-
-        print "poll_url: %s" % poll_url
-        print "len: %s" % len(result['Itineraries'])
 
         self.assertTrue(len(result['Itineraries']) > 0)
 
@@ -268,8 +265,7 @@ class TestFlights(unittest.TestCase):
 
         result = flights_service.request_booking_details(poll_url, outboundlegid=itinerary['OutboundLegId'], inboundlegid=itinerary['InboundLegId'])
 
-        print "poll_url: %s" % poll_url
-        print "result: %s" % result
+        print(result)
 
         pass            
 
@@ -285,7 +281,7 @@ class TestFlights(unittest.TestCase):
             inbounddate='2015-05-31', 
             adults=1)
 
-        print "result: %s" % result        
+        print(result)
 
 
     def tearDown(self):
