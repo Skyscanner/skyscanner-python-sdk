@@ -28,7 +28,7 @@ class TestCarHire(unittest.TestCase):
             locale='en-GB', 
             query='Kuala')
 
-        print result
+        print(result)
 
     def test_get_result(self):
         """
@@ -48,7 +48,7 @@ class TestCarHire(unittest.TestCase):
             driverage='30',
             userip='175.156.244.174')
 
-        print result        
+        print(result)
 
     def test_create_session(self):
         """
@@ -68,7 +68,7 @@ class TestCarHire(unittest.TestCase):
             driverage='30',
             userip='175.156.244.174')
 
-        print poll_url
+        print(poll_url)
 
 class TestHotels(unittest.TestCase):
     def setUp(self):
@@ -87,7 +87,7 @@ class TestHotels(unittest.TestCase):
             locale='en-GB', 
             query='Kuala')
 
-        print result
+        print(result)
 
     def test_get_result(self):
         """
