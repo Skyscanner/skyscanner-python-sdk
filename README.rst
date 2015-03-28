@@ -14,7 +14,28 @@ Skyscanner Python SDK
 * Free software: BSD license
 * Documentation: https://skyscanner.readthedocs.org.
 
+
 Features
 --------
 
-* TODO
+* Tested on Python 2.7
+* Supports Flights, Hotels, and Carhire
+
+
+Installation
+------------
+
+At the command line::
+
+    $ easy_install skyscanner
+
+Or, if you have virtualenvwrapper installed::
+
+    $ mkvirtualenv skyscanner
+    $ pip install skyscanner
+
+
+Usage
+-----
+
+https://skyscanner.readthedocs.org/en/latest/usage.html    
