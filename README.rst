@@ -9,10 +9,11 @@ Skyscanner Python SDK
         :target: https://pypi.python.org/pypi/skyscanner
 
 
-Skyscanner Python SDK
+Skyscanner Python SDK for Skyscanner's API
 
 * Free software: BSD license
-* Documentation: https://skyscanner.readthedocs.org.
+* SDK Documentation: https://skyscanner.readthedocs.org.
+* API Documentation: http://business.skyscanner.net/portal/en-GB/Documentation/ApiOverview
 
 
 Features
