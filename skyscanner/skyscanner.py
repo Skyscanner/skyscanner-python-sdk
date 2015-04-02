@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import requests
 
+
 class Transport():
+
     """
     Parent class for initialization
     """
@@ -54,7 +56,7 @@ class Transport():
         """
         r = requests.get(poll_url, params=params)
 
-        return r.json()        
+        return r.json()
 
 
 class Flights(Transport):
@@ -90,7 +92,6 @@ class Flights(Transport):
         headers = r.headers
 
         return headers['location']
-
 
     def request_booking_details(self, poll_url, **params):
         """
@@ -271,7 +272,9 @@ class CarHire(Transport):
 
         return results
 
+
 class Hotels(Transport):
+
     """
     Hotels Live prices
 
@@ -304,7 +307,7 @@ class Hotels(Transport):
         """
         params_list = [params['market'], params['currency'], params['locale'], params['entityid'], params[
             'checkindate'], params['checkoutdate'], params['guests'], params['rooms']]
-        
+
         params_path = '/'.join(str(p) for p in params_list)
 
         return params_path
