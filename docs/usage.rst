@@ -9,8 +9,7 @@ Flights: Live Pricing
 
 http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingList
 
-Get live prices
----------------
+Get live prices::
 
         from skyscanner import Flights
         
