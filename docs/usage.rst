@@ -30,8 +30,7 @@ Flights: Browse Cache
 
 http://business.skyscanner.net/portal/en-GB/Documentation/FlightsBrowseCacheOverview
 
-Cheapest quotes
----------------
+Cheapest quotes::
 
         from skyscanner import FlightsCache
 
@@ -45,8 +44,7 @@ Cheapest quotes
             outbounddate='2015-05', 
             inbounddate='2015-06')
 
-Cheapest price by route
------------------------
+Cheapest price by route::
 
         from skyscanner import FlightsCache
 
@@ -60,8 +58,7 @@ Cheapest price by route
             outbounddate='2015-05', 
             inbounddate='2015-06')
 
-Cheapest price by date
-----------------------
+Cheapest price by date::
 
         from skyscanner import FlightsCache
 
@@ -75,8 +72,7 @@ Cheapest price by date
             outbounddate='2015-05', 
             inbounddate='2015-06')
 
-Grid of prices by date
-----------------------
+Grid of prices by date::
 
         from skyscanner import FlightsCache
 
@@ -95,8 +91,7 @@ Car Hire
 
 http://business.skyscanner.net/portal/en-GB/Documentation/CarHireLivePricing
 
-Get live prices
----------------
+Get live prices::
     
         from skyscanner import CarHire
 
@@ -112,8 +107,7 @@ Get live prices
             driverage='30',
             userip='175.156.244.174')
 
-Car hire autosuggest
---------------------
+Car hire autosuggest::
 
         from skyscanner import CarHire
 
@@ -129,8 +123,7 @@ Hotels
 
 http://business.skyscanner.net/portal/en-GB/Documentation/HotelsOverview
 
-Hotels autosuggest
-------------------
+Hotels autosuggest::
     
         from skyscanner import Hotels
 
@@ -141,8 +134,7 @@ Hotels autosuggest
             locale='en-GB', 
             query='Kuala')
 
-Hotels prices and details
--------------------------
+Hotels prices and details::
 
         from skyscanner import Hotels
 
