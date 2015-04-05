@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 import requests
+import time
+import socket
 
+class ExceededRetries(Exception):
+    pass
 
 class Transport():
 
@@ -50,14 +54,43 @@ class Transport():
 
         return self.make_request(url, query=query)
 
+
+    def get_poll_response(self, poll_url, **params):
+        r = requests.get(poll_url, params=params)
+        print("r.url: %s" % r.url)
+
+        return r.json()
+
+    def get_poll_status(self, poll_response):
+        return poll_response['Status']
+
+
     def poll_session(self, poll_url, **params):
         """
         Poll the URL
         """
-        r = requests.get(poll_url, params=params)
+        tries = 10
+        initial_delay = 2
+        delay = 1
+        time.sleep(initial_delay)
+        success_list = ['UpdatesComplete', True, 'COMPLETE']
+        backoff = 2
 
-        return r.json()
+        for n in range(tries):
+            try:
+                poll_response = self.get_poll_response(poll_url, **params)
+                poll_status = self.get_poll_status(poll_response)
 
+                if poll_status not in success_list:
+                    # polling_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
+                    # print("{0}. Sleeping for {1} seconds.".format(polling_time, delay))
+                    time.sleep(delay)
+                    delay *= backoff
+                else:
+                    return poll_response
+            except socket.error as e:
+                print("Connection droppped with error code {0}".format(e.errno))
+        raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
 
 class Flights(Transport):
 
@@ -256,6 +289,37 @@ class CarHire(Transport):
 
         return headers['location']
 
+    def get_poll_status(self, poll_response):
+        return poll_response['in_progress']
+
+    def poll_session(self, poll_url, **params):
+        """
+        Poll the URL
+        """
+        tries = 10
+        initial_delay = 2
+        delay = 1
+        time.sleep(initial_delay)
+        # success_list = ['UpdatesComplete', True]
+        backoff = 2
+
+        for n in range(tries):
+            try:
+                poll_response = self.get_poll_response(poll_url, **params)
+                # poll_status = self.get_poll_status(poll_response)
+
+                if len(poll_response['websites']) == 0:
+                    # polling_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
+                    # print("{0}. Sleeping for {1} seconds.".format(polling_time, delay))
+                    time.sleep(delay)
+                    delay *= backoff
+                else:
+                    return poll_response
+            except socket.error as e:
+                print("Connection droppped with error code {0}".format(e.errno))
+        raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
+
+
     def get_result(self, **params):
         """
         Get all Itineraries, no filtering, etc.
@@ -339,6 +403,10 @@ class Hotels(Transport):
         headers = r.headers
 
         return headers['location']
+
+    def get_poll_status(self, poll_response):
+        return poll_response['status']
+
 
     def get_result(self, **params):
         """
