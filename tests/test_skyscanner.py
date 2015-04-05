@@ -28,7 +28,7 @@ class TestCarHire(unittest.TestCase):
             locale='en-GB', 
             query='Kuala')
 
-        print(result)
+        self.assertTrue(len(result['results']) > 0)
 
     def test_get_result(self):
         """
@@ -43,12 +43,12 @@ class TestCarHire(unittest.TestCase):
             locale='en-GB', 
             pickupplace='LHR-sky', 
             dropoffplace='LHR-sky', 
-            pickupdatetime='2015-05-29T12:00', 
-            dropoffdatetime='2015-05-29T18:00', 
+            pickupdatetime='2015-05-25T12:00', 
+            dropoffdatetime='2015-05-25T18:00', 
             driverage='30',
             userip='175.156.244.174')
 
-        print(result)
+        self.assertTrue(('cars' in result) and ('websites' in result))
 
     def test_create_session(self):
         """
@@ -68,7 +68,11 @@ class TestCarHire(unittest.TestCase):
             driverage='30',
             userip='175.156.244.174')
 
-        print(poll_url)
+        self.assertTrue(poll_url)
+
+    def tearDown(self):
+        pass        
+        
 
 class TestHotels(unittest.TestCase):
     def setUp(self):
@@ -87,17 +91,13 @@ class TestHotels(unittest.TestCase):
             locale='en-GB', 
             query='Kuala')
 
-        print(result)
+        self.assertTrue(len(result['results']) > 0)
 
     def test_get_result(self):
         """
         http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip} 
         YYYY-MM-DDThh:mm
         """
-
-        # params_list = [params['market'], params['currency'], params['locale'], params['entityid'], params[
-        #     'checkindate'], params['checkoutdate'], params['guests'], params['rooms']]
-
 
         hotels_service = Hotels(self.api_key)
         result = hotels_service.get_result(
@@ -110,7 +110,7 @@ class TestHotels(unittest.TestCase):
             guests=1, 
             rooms=1)
 
-        print(result)
+        self.assertTrue(len(result['places']) > 0)
 
     def test_create_session(self):
         """
@@ -129,7 +129,11 @@ class TestHotels(unittest.TestCase):
             guests=1, 
             rooms=1)
 
-        print(poll_url)
+        self.assertTrue(poll_url)
+
+    def tearDown(self):
+        pass        
+
 
 class TestFlights(unittest.TestCase):
 
@@ -151,9 +155,11 @@ class TestFlights(unittest.TestCase):
             outbounddate='2015-05', 
             inbounddate='2015-06')
 
-        print("result: %s" % result)
+        self.assertTrue(len(result['Quotes']) > 0)        
 
 
+    # I'm getting the following result:
+    # {u'ValidationErrors': [{u'Message': u'For this query please use the following service [BrowseDates]'}]}        
     def test_get_cheapest_price_by_route(self):
         flights_cache_service = FlightsCache(self.api_key)
         result = flights_cache_service.get_cheapest_price_by_route(
@@ -179,7 +185,7 @@ class TestFlights(unittest.TestCase):
             outbounddate='2015-05', 
             inbounddate='2015-06')
 
-        print("result: %s" % result)
+        self.assertTrue(len(result['Quotes']) > 0)
 
     def test_get_grid_prices_by_date(self):
         flights_cache_service = FlightsCache(self.api_key)
@@ -192,12 +198,12 @@ class TestFlights(unittest.TestCase):
             outbounddate='2015-05', 
             inbounddate='2015-06')
 
-        print("result: %s" % result)
+        self.assertTrue(len(result['Dates']) > 0)
 
 
     def test_create_session(self):
         flights_service = Flights(self.api_key)
-        result = flights_service.create_session(
+        poll_url = flights_service.create_session(
             country='UK',
             currency='GBP', 
             locale='en-GB', 
@@ -207,25 +213,20 @@ class TestFlights(unittest.TestCase):
             inbounddate='2015-05-31', 
             adults=1)
 
-        print("result: %s" % result)
-
-        pass
+        self.assertTrue(poll_url)
 
     def test_get_markets(self):
         transport = Transport(self.api_key)
         result = transport.get_markets('en-GB')
 
-        print("result: %s" % result)
-
-        pass
+        self.assertTrue(len(result['Countries']) > 0)
 
     def test_location_autosuggest(self):
         transport = Transport(self.api_key)
         result = transport.location_autosuggest('KUL', 'UK', 'GBP', 'en-GB')
 
-        print("result: %s" % result)
+        self.assertTrue(len(result['Places']) > 0)
 
-        pass
 
     # def test_poll_session(self):
     #     flights_service = Flights(self.api_key)
@@ -283,7 +284,9 @@ class TestFlights(unittest.TestCase):
             inbounddate='2015-05-31', 
             adults=1)
 
-        print(result)
+        # print(result)
+        print("status: %s" % result['Status'])
+        # self.assertTrue(len(result['Flights']['Itineraries']) > 0)        
 
 
     def tearDown(self):
