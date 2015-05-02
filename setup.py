@@ -31,7 +31,7 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Ardy Dedase",
     author_email='ardy.dedase@gmail.com',
-    url='https://github.com/ardydedase/skyscanner-python-sdk',
+    url='https://github.com/Skyscanner/skyscanner-python-sdk',
     packages=[
         'skyscanner',
     ],
