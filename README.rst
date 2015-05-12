@@ -8,14 +8,6 @@ Skyscanner Python SDK
 .. image:: https://img.shields.io/pypi/v/skyscanner.svg
     :target: https://pypi.python.org/pypi/skyscanner
 
-.. image:: https://pypip.in/v/skyscanner/badge.png
-    :target: https://crate.io/packages/skyscanner/
-    :alt: Latest PyPI version
-
-.. image:: https://pypip.in/d/skyscanner/badge.png
-    :target: https://crate.io/packages/skyscanner/
-    :alt: Number of PyPI downloads
-
 .. image:: https://pypip.in/download/skyscanner/badge.svg
     :target: https://pypi.python.org/pypi//skyscanner/
     :alt: Downloads
