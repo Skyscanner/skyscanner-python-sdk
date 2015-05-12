@@ -3,11 +3,29 @@ Skyscanner Python SDK
 ===============================
 
 .. image:: https://api.travis-ci.org/Skyscanner/skyscanner-python-sdk.svg
-        :target: https://travis-ci.org/Skyscanner/skyscanner-python-sdk
+    :target: https://travis-ci.org/Skyscanner/skyscanner-python-sdk
+
+.. image:: https://coveralls.io/repos/Skyscanner/skyscanner-python-sdk/badge.svg 
+    :target: https://coveralls.io/r/Skyscanner/skyscanner-python-sdk        
 
 .. image:: https://img.shields.io/pypi/v/skyscanner.svg
-        :target: https://pypi.python.org/pypi/skyscanner
+    :target: https://pypi.python.org/pypi/skyscanner
 
+.. image:: https://pypip.in/v/skyscanner/badge.png
+    :target: https://crate.io/packages/skyscanner/
+    :alt: Latest PyPI version
+
+.. image:: https://pypip.in/d/skyscanner/badge.png
+    :target: https://crate.io/packages/skyscanner/
+    :alt: Number of PyPI downloads
+
+.. image:: https://pypip.in/download/skyscanner/badge.svg
+    :target: https://pypi.python.org/pypi//skyscanner/
+    :alt: Downloads
+
+.. image:: https://pypip.in/py_versions/skyscanner/badge.svg
+    :target: https://pypi.python.org/pypi/skyscanner/
+    :alt: Supported Python versions
 
 Skyscanner Python SDK for Skyscanner's API
 
