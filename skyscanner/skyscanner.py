@@ -14,12 +14,12 @@ class Transport(object):
     Parent class for initialization
     """
 
-    api_key = None
-
     MARKET_SERVICE_URL = 'http://partners.api.skyscanner.net/apiservices/reference/v1.0/countries'
     LOCATION_AUTOSUGGEST_SERVICE_URL = 'http://partners.api.skyscanner.net/apiservices/autosuggest/v1.0'
 
     def __init__(self, api_key):
+        if not api_key:
+            raise ValueError('API key must be specified.')
         self.api_key = api_key
 
     def make_request(self, service_url, **params):
