@@ -3,10 +3,12 @@ import requests
 import time
 import socket
 
+
 class ExceededRetries(Exception):
     pass
 
-class Transport():
+
+class Transport(object):
 
     """
     Parent class for initialization
@@ -46,7 +48,7 @@ class Transport():
         """
         Location Autosuggest Service
         Doc URL: http://business.skyscanner.net/portal/en-GB/Documentation/Autosuggest
-        Format: http://partners.api.skyscanner.net/apiservices/autosuggest/v1.0/{market}/{currency}/{locale}/?query={query}&apiKey={apiKey}        
+        Format: http://partners.api.skyscanner.net/apiservices/autosuggest/v1.0/{market}/{currency}/{locale}/?query={query}&apiKey={apiKey}
         """
 
         url = "{url}/{market}/{currency}/{locale}/".format(url=self.LOCATION_AUTOSUGGEST_SERVICE_URL,
@@ -54,16 +56,13 @@ class Transport():
 
         return self.make_request(url, query=query)
 
-
     def get_poll_response(self, poll_url, **params):
         r = requests.get(poll_url, params=params)
-        print("r.url: %s" % r.url)
 
         return r.json()
 
     def get_poll_status(self, poll_response):
         return poll_response['Status']
-
 
     def poll_session(self, poll_url, **params):
         """
@@ -91,6 +90,7 @@ class Transport():
             except socket.error as e:
                 print("Connection droppped with error code {0}".format(e.errno))
         raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
+
 
 class Flights(Transport):
 
@@ -226,7 +226,7 @@ class CarHire(Transport):
 
     """
     Carhire Live Pricing
-    http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip} 
+    http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip}
 
     """
     BASE_URL = 'http://partners.api.skyscanner.net'
@@ -238,7 +238,7 @@ class CarHire(Transport):
 
     def location_autosuggest(self, **params):
         """
-        http://partners.api.skyscanner.net/apiservices/hotels/autosuggest/v2/{market}/{currency}/{locale}/{query}?apikey={apikey}        
+        http://partners.api.skyscanner.net/apiservices/hotels/autosuggest/v2/{market}/{currency}/{locale}/{query}?apikey={apikey}
         """
         service_url = "{url}/{market}/{currency}/{locale}/{query}".format(
             url=self.LOCATION_AUTOSUGGEST_URL,
@@ -319,7 +319,6 @@ class CarHire(Transport):
                 print("Connection droppped with error code {0}".format(e.errno))
         raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
 
-
     def get_result(self, **params):
         """
         Get all Itineraries, no filtering, etc.
@@ -342,7 +341,7 @@ class Hotels(Transport):
     """
     Hotels Live prices
 
-    http://partners.api.skyscanner.net/apiservices/hotels/liveprices/v2/{market}/{currency}/{locale}/{entityid}/{checkindate}/{checkoutdate}/{guests}/{rooms}?apiKey={apiKey}[&pageSize={pageSize}][&imageLimit={imageLimit}]    
+    http://partners.api.skyscanner.net/apiservices/hotels/liveprices/v2/{market}/{currency}/{locale}/{entityid}/{checkindate}/{checkoutdate}/{guests}/{rooms}?apiKey={apiKey}[&pageSize={pageSize}][&imageLimit={imageLimit}]
     """
 
     BASE_URL = 'http://partners.api.skyscanner.net'
@@ -354,7 +353,7 @@ class Hotels(Transport):
 
     def location_autosuggest(self, **params):
         """
-        http://partners.api.skyscanner.net/apiservices/hotels/autosuggest/v2/{market}/{currency}/{locale}/{query}?apikey={apikey}        
+        http://partners.api.skyscanner.net/apiservices/hotels/autosuggest/v2/{market}/{currency}/{locale}/{query}?apikey={apikey}
         """
         service_url = "{url}/{market}/{currency}/{locale}/{query}".format(
             url=self.LOCATION_AUTOSUGGEST_URL,
@@ -406,7 +405,6 @@ class Hotels(Transport):
 
     def get_poll_status(self, poll_response):
         return poll_response['status']
-
 
     def get_result(self, **params):
         """
