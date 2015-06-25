@@ -9,6 +9,7 @@ Tests for `skyscanner` module.
 """
 
 import unittest
+from datetime import datetime, timedelta
 
 from skyscanner.skyscanner import Flights, Transport, FlightsCache, CarHire, Hotels
 
@@ -18,7 +19,11 @@ class TestCarHire(unittest.TestCase):
         # API Key that's meant for testing only
         # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
         self.api_key = 'prtl6749387986743898559646983194'
-        pass
+        datetime_format = '%Y-%m-%dT%H:%S'
+        pickup_datetime = datetime.now()
+        dropoff_datetime = pickup_datetime + timedelta(days=3)
+        self.pickup = pickup_datetime.strftime(datetime_format)
+        self.dropoff = dropoff_datetime.strftime(datetime_format)
 
     def test_location_autosuggest(self):
         carhire_service = CarHire(self.api_key)
@@ -44,8 +49,8 @@ class TestCarHire(unittest.TestCase):
             locale='en-GB',
             pickupplace='LHR-sky',
             dropoffplace='LHR-sky',
-            pickupdatetime='2015-05-25T12:00',
-            dropoffdatetime='2015-05-25T18:00',
+            pickupdatetime=self.pickup,
+            dropoffdatetime=self.dropoff,
             driverage='30',
             userip='175.156.244.174')
 
@@ -64,8 +69,8 @@ class TestCarHire(unittest.TestCase):
             locale='en-GB',
             pickupplace='LHR-sky',
             dropoffplace='LHR-sky',
-            pickupdatetime='2015-05-28T12:00',
-            dropoffdatetime='2015-05-31T12:00',
+            pickupdatetime=self.pickup,
+            dropoffdatetime=self.dropoff,
             driverage='30',
             userip='175.156.244.174')
 
@@ -81,7 +86,11 @@ class TestHotels(unittest.TestCase):
         # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
 
         self.api_key = 'prtl6749387986743898559646983194'
-        pass
+        datetime_format = '%Y-%m-%d'
+        checkin_datetime = datetime.now()
+        checkout_datetime = checkin_datetime + timedelta(days=4)
+        self.checkin = checkin_datetime.strftime(datetime_format)
+        self.checkout = checkout_datetime.strftime(datetime_format)
 
     def test_location_autosuggest(self):
         hotels_service = Hotels(self.api_key)
@@ -106,12 +115,12 @@ class TestHotels(unittest.TestCase):
             currency='GBP',
             locale='en-GB',
             entityid=27543923,
-            checkindate='2015-05-26',
-            checkoutdate='2015-05-30',
+            checkindate=self.checkin,
+            checkoutdate=self.checkout,
             guests=1,
             rooms=1)
 
-        self.assertTrue(len(result['places']) > 0)
+        self.assertTrue(len(result['hotels']) > 0)
 
     def test_create_session(self):
         """
@@ -125,8 +134,8 @@ class TestHotels(unittest.TestCase):
             currency='GBP',
             locale='en-GB',
             entityid=27543923,
-            checkindate='2015-05-26',
-            checkoutdate='2015-05-30',
+            checkindate=self.checkin,
+            checkoutdate=self.checkout,
             guests=1,
             rooms=1)
 
@@ -143,7 +152,16 @@ class TestFlights(unittest.TestCase):
         # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
 
         self.api_key = 'prtl6749387986743898559646983194'
-        pass
+        datetime_format = '%Y-%m'
+        outbound_datetime = datetime.now()
+        inbound_datetime = outbound_datetime + timedelta(days=31)
+        self.outbound = outbound_datetime.strftime(datetime_format)
+        self.inbound = inbound_datetime.strftime(datetime_format)
+
+        datetime_format = '%Y-%m-%d'
+        inbound_datetime = outbound_datetime + timedelta(days=3)
+        self.outbound_days = outbound_datetime.strftime(datetime_format)
+        self.inbound_days = inbound_datetime.strftime(datetime_format)
 
     def test_get_cheapest_quotes(self):
         flights_cache_service = FlightsCache(self.api_key)
@@ -153,8 +171,8 @@ class TestFlights(unittest.TestCase):
             locale='en-GB',
             originplace='SIN-sky',
             destinationplace='KUL-sky',
-            outbounddate='2015-05',
-            inbounddate='2015-06')
+            outbounddate=self.outbound,
+            inbounddate=self.inbound)
 
         self.assertTrue(len(result['Quotes']) > 0)
 
@@ -168,8 +186,8 @@ class TestFlights(unittest.TestCase):
             locale='en-GB',
             originplace='SIN-sky',
             destinationplace='KUL-sky',
-            outbounddate='2015-05',
-            inbounddate='2015-06')
+            outbounddate=self.outbound,
+            inbounddate=self.inbound)
 
         print("result: %s" % result)
 
@@ -181,8 +199,8 @@ class TestFlights(unittest.TestCase):
             locale='en-GB',
             originplace='SIN-sky',
             destinationplace='KUL-sky',
-            outbounddate='2015-05',
-            inbounddate='2015-06')
+            outbounddate=self.outbound,
+            inbounddate=self.inbound)
 
         self.assertTrue(len(result['Quotes']) > 0)
 
@@ -194,8 +212,8 @@ class TestFlights(unittest.TestCase):
             locale='en-GB',
             originplace='SIN-sky',
             destinationplace='KUL-sky',
-            outbounddate='2015-05',
-            inbounddate='2015-06')
+            outbounddate=self.outbound,
+            inbounddate=self.inbound)
 
         self.assertTrue(len(result['Dates']) > 0)
 
@@ -207,8 +225,8 @@ class TestFlights(unittest.TestCase):
             locale='en-GB',
             originplace='SIN-sky',
             destinationplace='KUL-sky',
-            outbounddate='2015-05-28',
-            inbounddate='2015-05-31',
+            outbounddate=self.outbound_days,
+            inbounddate=self.inbound_days,
             adults=1)
 
         self.assertTrue(poll_url)
@@ -278,8 +296,8 @@ class TestFlights(unittest.TestCase):
             locale='en-GB',
             originplace='SIN-sky',
             destinationplace='KUL-sky',
-            outbounddate='2015-05-28',
-            inbounddate='2015-05-31',
+            outbounddate=self.outbound_days,
+            inbounddate=self.inbound_days,
             adults=1)
 
         # print(result)
