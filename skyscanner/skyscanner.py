@@ -3,21 +3,23 @@ import requests
 import time
 import socket
 
+
 class ExceededRetries(Exception):
     pass
 
-class Transport():
+
+class Transport(object):
 
     """
     Parent class for initialization
     """
-
-    api_key = None
-
-    MARKET_SERVICE_URL = 'http://partners.api.skyscanner.net/apiservices/reference/v1.0/countries'
-    LOCATION_AUTOSUGGEST_SERVICE_URL = 'http://partners.api.skyscanner.net/apiservices/autosuggest/v1.0'
+    API_HOST = 'http://partners.api.skyscanner.net'
+    MARKET_SERVICE_URL = '{api_host}/apiservices/reference/v1.0/countries'.format(api_host=API_HOST)
+    LOCATION_AUTOSUGGEST_SERVICE_URL = '{api_host}/apiservices/autosuggest/v1.0'.format(api_host=API_HOST)
 
     def __init__(self, api_key):
+        if not api_key:
+            raise ValueError('API key must be specified.')
         self.api_key = api_key
 
     def make_request(self, service_url, **params):
@@ -46,7 +48,7 @@ class Transport():
         """
         Location Autosuggest Service
         Doc URL: http://business.skyscanner.net/portal/en-GB/Documentation/Autosuggest
-        Format: http://partners.api.skyscanner.net/apiservices/autosuggest/v1.0/{market}/{currency}/{locale}/?query={query}&apiKey={apiKey}        
+        Format: {API_HOST}/apiservices/autosuggest/v1.0/{market}/{currency}/{locale}/?query={query}&apiKey={apiKey}
         """
 
         url = "{url}/{market}/{currency}/{locale}/".format(url=self.LOCATION_AUTOSUGGEST_SERVICE_URL,
@@ -54,16 +56,13 @@ class Transport():
 
         return self.make_request(url, query=query)
 
-
     def get_poll_response(self, poll_url, **params):
         r = requests.get(poll_url, params=params)
-        print("r.url: %s" % r.url)
 
         return r.json()
 
     def get_poll_status(self, poll_response):
         return poll_response['Status']
-
 
     def poll_session(self, poll_url, **params):
         """
@@ -92,6 +91,7 @@ class Transport():
                 print("Connection droppped with error code {0}".format(e.errno))
         raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
 
+
 class Flights(Transport):
 
     """
@@ -99,7 +99,7 @@ class Flights(Transport):
     http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingList
     """
 
-    PRICING_SESSION_URL = 'http://partners.api.skyscanner.net/apiservices/pricing/v1.0'
+    PRICING_SESSION_URL = '{api_host}/apiservices/pricing/v1.0'.format(api_host=Transport.API_HOST)
 
     def __init__(self, api_key):
         Transport.__init__(self, api_key)
@@ -129,7 +129,7 @@ class Flights(Transport):
     def request_booking_details(self, poll_url, **params):
         """
         Request for booking details
-        URL Format: http://partners.api.skyscanner.net/apiservices/pricing/v1.0/{session key}/booking?apiKey={apiKey}
+        URL Format: {API_HOST}/apiservices/pricing/v1.0/{session key}/booking?apiKey={apiKey}
         """
         params.update({
             'apiKey': self.api_key
@@ -160,10 +160,10 @@ class FlightsCache(Flights):
     http://business.skyscanner.net/portal/en-GB/Documentation/FlightsBrowseCacheOverview
     """
 
-    BROWSE_QUOTES_SERVICE_URL = 'http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0'
-    BROWSE_ROUTES_SERVICE_URL = 'http://partners.api.skyscanner.net/apiservices/browseroutes/v1.0'
-    BROWSE_DATES_SERVICE_URL = 'http://partners.api.skyscanner.net/apiservices/browsedates/v1.0'
-    BROWSE_GRID_SERVICE_URL = 'http://partners.api.skyscanner.net/apiservices/browsegrid/v1.0'
+    BROWSE_QUOTES_SERVICE_URL = '{api_host}/apiservices/browsequotes/v1.0'.format(api_host=Transport.API_HOST)
+    BROWSE_ROUTES_SERVICE_URL = '{api_host}/apiservices/browseroutes/v1.0'.format(api_host=Transport.API_HOST)
+    BROWSE_DATES_SERVICE_URL = '{api_host}/apiservices/browsedates/v1.0'.format(api_host=Transport.API_HOST)
+    BROWSE_GRID_SERVICE_URL = '{api_host}/apiservices/browsegrid/v1.0'.format(api_host=Transport.API_HOST)
 
     def construct_params(self, params):
         """
@@ -181,7 +181,7 @@ class FlightsCache(Flights):
 
     def get_cheapest_price_by_date(self, **params):
         """
-        http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/{market}/{currency}/{locale}/{originPlace}/{destinationPlace}/{outboundPartialDate}/{inboundPartialDate}?apiKey={apiKey}
+        {API_HOST}/apiservices/browsedates/v1.0/{market}/{currency}/{locale}/{originPlace}/{destinationPlace}/{outboundPartialDate}/{inboundPartialDate}?apiKey={apiKey}
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_DATES_SERVICE_URL,
@@ -192,7 +192,7 @@ class FlightsCache(Flights):
 
     def get_cheapest_price_by_route(self, **params):
         """
-        http://partners.api.skyscanner.net/apiservices/browseroutes/v1.0/{market}/{currency}/{locale}/{originPlace}/{destinationPlace}/{outboundPartialDate}/{inboundPartialDate}?apiKey={apiKey}
+        {API_HOST}/apiservices/browseroutes/v1.0/{market}/{currency}/{locale}/{originPlace}/{destinationPlace}/{outboundPartialDate}/{inboundPartialDate}?apiKey={apiKey}
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_ROUTES_SERVICE_URL,
@@ -203,7 +203,7 @@ class FlightsCache(Flights):
 
     def get_cheapest_quotes(self, **params):
         """
-        http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/{market}/{currency}/{locale}/{originPlace}/{destinationPlace}/{outboundPartialDate}/{inboundPartialDate}?apiKey={apiKey}
+        {API_HOST}/apiservices/browsequotes/v1.0/{market}/{currency}/{locale}/{originPlace}/{destinationPlace}/{outboundPartialDate}/{inboundPartialDate}?apiKey={apiKey}
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_QUOTES_SERVICE_URL,
@@ -213,7 +213,7 @@ class FlightsCache(Flights):
 
     def get_grid_prices_by_date(self, **params):
         """
-        http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/{market}/{currency}/{locale}/{originPlace}/{destinationPlace}/{outboundPartialDate}/{inboundPartialDate}?apiKey={apiKey}
+        {API_HOST}/apiservices/browsequotes/v1.0/{market}/{currency}/{locale}/{originPlace}/{destinationPlace}/{outboundPartialDate}/{inboundPartialDate}?apiKey={apiKey}
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_GRID_SERVICE_URL,
@@ -226,19 +226,18 @@ class CarHire(Transport):
 
     """
     Carhire Live Pricing
-    http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip} 
-
+    {API_HOST}/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip}
     """
-    BASE_URL = 'http://partners.api.skyscanner.net'
-    PRICING_SESSION_URL = 'http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2'
-    LOCATION_AUTOSUGGEST_URL = 'http://partners.api.skyscanner.net/apiservices/hotels/autosuggest/v2'
+
+    PRICING_SESSION_URL = '{api_host}/apiservices/carhire/liveprices/v2'.format(api_host=Transport.API_HOST)
+    LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/hotels/autosuggest/v2'.format(api_host=Transport.API_HOST)
 
     def __init__(self, api_key):
         Transport.__init__(self, api_key)
 
     def location_autosuggest(self, **params):
         """
-        http://partners.api.skyscanner.net/apiservices/hotels/autosuggest/v2/{market}/{currency}/{locale}/{query}?apikey={apikey}        
+        http://partners.api.skyscanner.net/apiservices/hotels/autosuggest/v2/{market}/{currency}/{locale}/{query}?apikey={apikey}
         """
         service_url = "{url}/{market}/{currency}/{locale}/{query}".format(
             url=self.LOCATION_AUTOSUGGEST_URL,
@@ -319,7 +318,6 @@ class CarHire(Transport):
                 print("Connection droppped with error code {0}".format(e.errno))
         raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
 
-
     def get_result(self, **params):
         """
         Get all Itineraries, no filtering, etc.
@@ -328,7 +326,7 @@ class CarHire(Transport):
         poll_path = self.create_session(**params)
 
         poll_url = "{url}{path}".format(
-            url=self.BASE_URL,
+            url=self.API_HOST,
             path=poll_path
         )
 
@@ -342,19 +340,18 @@ class Hotels(Transport):
     """
     Hotels Live prices
 
-    http://partners.api.skyscanner.net/apiservices/hotels/liveprices/v2/{market}/{currency}/{locale}/{entityid}/{checkindate}/{checkoutdate}/{guests}/{rooms}?apiKey={apiKey}[&pageSize={pageSize}][&imageLimit={imageLimit}]    
+    {API_HOST}/apiservices/hotels/liveprices/v2/{market}/{currency}/{locale}/{entityid}/{checkindate}/{checkoutdate}/{guests}/{rooms}?apiKey={apiKey}[&pageSize={pageSize}][&imageLimit={imageLimit}]
     """
 
-    BASE_URL = 'http://partners.api.skyscanner.net'
-    PRICING_SESSION_URL = 'http://partners.api.skyscanner.net/apiservices/hotels/liveprices/v2'
-    LOCATION_AUTOSUGGEST_URL = 'http://partners.api.skyscanner.net/apiservices/hotels/autosuggest/v2'
+    PRICING_SESSION_URL = '{api_host}/apiservices/hotels/liveprices/v2'.format(api_host=Transport.API_HOST)
+    LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/hotels/autosuggest/v2'.format(api_host=Transport.API_HOST)
 
     def __init__(self, api_key):
         Transport.__init__(self, api_key)
 
     def location_autosuggest(self, **params):
         """
-        http://partners.api.skyscanner.net/apiservices/hotels/autosuggest/v2/{market}/{currency}/{locale}/{query}?apikey={apikey}        
+        {API_HOST}/apiservices/hotels/autosuggest/v2/{market}/{currency}/{locale}/{query}?apikey={apikey}
         """
         service_url = "{url}/{market}/{currency}/{locale}/{query}".format(
             url=self.LOCATION_AUTOSUGGEST_URL,
@@ -407,7 +404,6 @@ class Hotels(Transport):
     def get_poll_status(self, poll_response):
         return poll_response['status']
 
-
     def get_result(self, **params):
         """
         Get all Itineraries, no filtering, etc.
@@ -416,7 +412,7 @@ class Hotels(Transport):
         poll_path = self.create_session(**params)
 
         poll_url = "{url}{path}".format(
-            url=self.BASE_URL,
+            url=self.API_HOST,
             path=poll_path
         )
 
