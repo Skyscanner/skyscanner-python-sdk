@@ -5,7 +5,7 @@ Credits
 Development Lead
 ----------------
 
-* Ardy Dedase <ardy.dedase@gmail.com>
+* Ardy Dedase <ardy.dedase@skyscanner.net>
 
 Contributors
 ------------

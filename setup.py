@@ -30,7 +30,7 @@ setup(
     description="Skyscanner Python SDK",
     long_description=readme + '\n\n' + history,
     author="Ardy Dedase",
-    author_email='ardy.dedase@gmail.com',
+    author_email='ardy.dedase@skyscanner.net',
     url='https://github.com/Skyscanner/skyscanner-python-sdk',
     packages=[
         'skyscanner',
