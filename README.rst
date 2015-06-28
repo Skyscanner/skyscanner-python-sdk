@@ -8,14 +8,6 @@ Skyscanner Python SDK
 .. image:: https://img.shields.io/pypi/v/skyscanner.svg
     :target: https://pypi.python.org/pypi/skyscanner
 
-.. image:: https://pypip.in/download/skyscanner/badge.svg
-    :target: https://pypi.python.org/pypi//skyscanner/
-    :alt: Downloads
-
-.. image:: https://pypip.in/py_versions/skyscanner/badge.svg
-    :target: https://pypi.python.org/pypi/skyscanner/
-    :alt: Supported Python versions
-
 Skyscanner Python SDK for Skyscanner's API
 
 * Free software: BSD license
