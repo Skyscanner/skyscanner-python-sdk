@@ -26,6 +26,12 @@ class Transport(object):
             raise ValueError('API key must be specified.')
         self.api_key = api_key
 
+    def get_result(self, **params):
+        """
+        Get all results, no filtering, etc. by creating and polling the session.
+        """
+        return self.poll_session(self.create_session(**params))
+
     def make_request(self, service_url, method='get', headers=None, data=None, callback=None, **params):
         """
         Reusable method for simple GET requests
@@ -70,6 +76,10 @@ class Transport(object):
 
     def get_poll_status(self, poll_response):
         return poll_response['Status']
+
+    def create_session(self, **params):
+        """Creates a session for polling. Should be implemented by sub-classes"""
+        raise NotImplementedError('Should be implemented by a sub-class.')
 
     def poll_session(self, poll_url, **params):
         """
@@ -151,12 +161,6 @@ class Flights(Transport):
                                  method='put',
                                  callback=lambda resp: resp.headers['location'],
                                  **params)
-
-    def get_result(self, **params):
-        """
-        Get all Itineraries, no filtering, etc.
-        """
-        return self.poll_session(self.create_session(**params))
 
 
 class FlightsCache(Flights):
@@ -277,10 +281,12 @@ class CarHire(Transport):
             params_path=self.construct_params(params)
         )
 
-        return self.make_request(service_url,
-                                 headers=self._default_session_headers(),
-                                 callback=lambda resp: resp.headers['location'],
-                                 userip=params['userip'])
+        poll_path = self.make_request(service_url,
+                                      headers=self._default_session_headers(),
+                                      callback=lambda resp: resp.headers['location'],
+                                      userip=params['userip'])
+
+        return "{url}{path}".format(url=self.API_HOST, path=poll_path)
 
     def get_poll_status(self, poll_response):
         return poll_response['in_progress']
@@ -311,22 +317,6 @@ class CarHire(Transport):
             except socket.error as e:
                 print("Connection droppped with error code {0}".format(e.errno))
         raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
-
-    def get_result(self, **params):
-        """
-        Get all Itineraries, no filtering, etc.
-        """
-
-        poll_path = self.create_session(**params)
-
-        poll_url = "{url}{path}".format(
-            url=self.API_HOST,
-            path=poll_path
-        )
-
-        results = self.poll_session(poll_url)
-
-        return results
 
 
 class Hotels(Transport):
@@ -379,25 +369,11 @@ class Hotels(Transport):
             params_path=self.construct_params(params)
         )
 
-        return self.make_request(service_url,
-                                 headers=self._default_session_headers(),
-                                 callback=lambda resp: resp.headers['location'])
+        poll_path = self.make_request(service_url,
+                                      headers=self._default_session_headers(),
+                                      callback=lambda resp: resp.headers['location'])
+
+        return "{url}{path}".format(url=self.API_HOST, path=poll_path)
 
     def get_poll_status(self, poll_response):
         return poll_response['status']
-
-    def get_result(self, **params):
-        """
-        Get all Itineraries, no filtering, etc.
-        """
-
-        poll_path = self.create_session(**params)
-
-        poll_url = "{url}{path}".format(
-            url=self.API_HOST,
-            path=poll_path
-        )
-
-        results = self.poll_session(poll_url)
-
-        return results
