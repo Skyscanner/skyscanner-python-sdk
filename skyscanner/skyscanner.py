@@ -8,6 +8,10 @@ class ExceededRetries(Exception):
     pass
 
 
+class ResponseException(Exception):
+    pass
+
+
 class Transport(object):
 
     """
@@ -22,17 +26,22 @@ class Transport(object):
             raise ValueError('API key must be specified.')
         self.api_key = api_key
 
-    def make_request(self, service_url, **params):
+    def make_request(self, service_url, method='get', headers=None, data=None, callback=None, **params):
         """
         Reusable method for simple GET requests
         """
-        params.update({
-            'apiKey': self.api_key
-        })
+        if callback is None:
+            callback = self._default_resp_callback
 
-        r = requests.get(service_url, params=params)
+        if 'apikey' not in service_url.lower():
+            params.update({
+                'apiKey': self.api_key
+            })
 
-        return r.json()
+        request = getattr(requests, method.lower())
+        r = request(service_url, headers=headers, data=data, params=params)
+
+        return callback(r)
 
     def get_markets(self, market):
         """
@@ -57,9 +66,7 @@ class Transport(object):
         return self.make_request(url, query=query)
 
     def get_poll_response(self, poll_url, **params):
-        r = requests.get(poll_url, params=params)
-
-        return r.json()
+        return self.make_request(poll_url, **params)
 
     def get_poll_status(self, poll_response):
         return poll_response['Status']
@@ -96,6 +103,20 @@ class Transport(object):
         return {'content-type': 'application/x-www-form-urlencoded',
                 'accept': 'application/json'}
 
+    @staticmethod
+    def _default_resp_callback(resp):
+        try:
+            resp_json = resp.json()
+        except ValueError:
+            raise ValueError('Invalid JSON in response: %s' % resp.content)
+
+        if 'errors' in resp_json:
+            errors = resp_json['errors']
+            msg = '\n\t%s' % '\n\t'.join(errors) if len(errors) > 1 else errors[0]
+            raise ResponseException(msg)
+
+        return resp_json
+
 
 class Flights(Transport):
 
@@ -115,40 +136,27 @@ class Flights(Transport):
         date format: YYYY-mm-dd
         location: ISO code
         """
-        params.update({
-            'apiKey': self.api_key
-        })
-
-        r = requests.post(
-            self.PRICING_SESSION_URL, data=params, headers=self._default_session_headers())
-
-        return r.headers['location']
+        return self.make_request(self.PRICING_SESSION_URL,
+                                 method='post',
+                                 headers=self._default_session_headers(),
+                                 callback=lambda resp: resp.headers['location'],
+                                 data=params)
 
     def request_booking_details(self, poll_url, **params):
         """
         Request for booking details
         URL Format: {API_HOST}/apiservices/pricing/v1.0/{session key}/booking?apiKey={apiKey}
         """
-        params.update({
-            'apiKey': self.api_key
-        })
-        poll_url = "%s/booking" % poll_url
-
-        r = requests.put(poll_url, params=params)
-
-        headers = r.headers
-
-        return headers['location']
+        return self.make_request("%s/booking" % poll_url,
+                                 method='put',
+                                 callback=lambda resp: resp.headers['location'],
+                                 **params)
 
     def get_result(self, **params):
         """
         Get all Itineraries, no filtering, etc.
         """
-
-        poll_url = self.create_session(**params)
-        results = self.poll_session(poll_url, apiKey=self.api_key)
-
-        return results
+        return self.poll_session(self.create_session(**params))
 
 
 class FlightsCache(Flights):
@@ -269,15 +277,10 @@ class CarHire(Transport):
             params_path=self.construct_params(params)
         )
 
-        params = {
-            'apiKey': self.api_key,
-            'userip': params['userip']
-        }
-
-        r = requests.get(
-            service_url, params=params, headers=self._default_session_headers())
-
-        return r.headers['location']
+        return self.make_request(service_url,
+                                 headers=self._default_session_headers(),
+                                 callback=lambda resp: resp.headers['location'],
+                                 userip=params['userip'])
 
     def get_poll_status(self, poll_response):
         return poll_response['in_progress']
@@ -376,14 +379,9 @@ class Hotels(Transport):
             params_path=self.construct_params(params)
         )
 
-        params = {
-            'apiKey': self.api_key
-        }
-
-        r = requests.get(
-            service_url, params=params, headers=self._default_session_headers())
-
-        return r.headers['location']
+        return self.make_request(service_url,
+                                 headers=self._default_session_headers(),
+                                 callback=lambda resp: resp.headers['location'])
 
     def get_poll_status(self, poll_response):
         return poll_response['status']
