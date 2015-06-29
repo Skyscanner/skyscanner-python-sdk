@@ -91,6 +91,11 @@ class Transport(object):
                 print("Connection droppped with error code {0}".format(e.errno))
         raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
 
+    @staticmethod
+    def _default_session_headers():
+        return {'content-type': 'application/x-www-form-urlencoded',
+                'accept': 'application/json'}
+
 
 class Flights(Transport):
 
@@ -114,17 +119,10 @@ class Flights(Transport):
             'apiKey': self.api_key
         })
 
-        headers = {
-            'content-type': 'application/x-www-form-urlencoded',
-            'accept': 'application/json',
-        }
-
         r = requests.post(
-            self.PRICING_SESSION_URL, data=params, headers=headers)
+            self.PRICING_SESSION_URL, data=params, headers=self._default_session_headers())
 
-        headers = r.headers
-
-        return headers['location']
+        return r.headers['location']
 
     def request_booking_details(self, poll_url, **params):
         """
@@ -266,11 +264,6 @@ class CarHire(Transport):
         location: ISO code
         """
 
-        headers = {
-            'content-type': 'application/x-www-form-urlencoded',
-            'accept': 'application/json',
-        }
-
         service_url = "{url}/{params_path}".format(
             url=self.PRICING_SESSION_URL,
             params_path=self.construct_params(params)
@@ -282,11 +275,9 @@ class CarHire(Transport):
         }
 
         r = requests.get(
-            service_url, params=params, headers=headers)
+            service_url, params=params, headers=self._default_session_headers())
 
-        headers = r.headers
-
-        return headers['location']
+        return r.headers['location']
 
     def get_poll_status(self, poll_response):
         return poll_response['in_progress']
@@ -380,11 +371,6 @@ class Hotels(Transport):
         location: ISO code
         """
 
-        headers = {
-            'content-type': 'application/x-www-form-urlencoded',
-            'accept': 'application/json',
-        }
-
         service_url = "{url}/{params_path}".format(
             url=self.PRICING_SESSION_URL,
             params_path=self.construct_params(params)
@@ -395,11 +381,9 @@ class Hotels(Transport):
         }
 
         r = requests.get(
-            service_url, params=params, headers=headers)
+            service_url, params=params, headers=self._default_session_headers())
 
-        headers = r.headers
-
-        return headers['location']
+        return r.headers['location']
 
     def get_poll_status(self, poll_response):
         return poll_response['status']
