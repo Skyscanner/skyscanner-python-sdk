@@ -74,39 +74,43 @@ class Transport(object):
     def get_poll_response(self, poll_url, **params):
         return self.make_request(poll_url, **params)
 
-    def get_poll_status(self, poll_response):
-        return poll_response['Status']
-
     def create_session(self, **params):
         """Creates a session for polling. Should be implemented by sub-classes"""
         raise NotImplementedError('Should be implemented by a sub-class.')
 
-    def poll_session(self, poll_url, **params):
+    def poll_session(self, poll_url, initial_delay=2, delay=1, tries=10, **params):
         """
         Poll the URL
+        :param poll_url - URL to poll, should be returned by 'create_session' call
+        :param initial_delay - specifies how many seconds to wait before the first poll
+        :param delay - specifies how many seconds to wait between the polls
+        :param tries - number of polls to perform
+        :param params - additional query params for each poll request
         """
-        tries = 10
-        initial_delay = 2
-        delay = 1
         time.sleep(initial_delay)
-        success_list = ['UpdatesComplete', True, 'COMPLETE']
-        backoff = 2
-
         for n in range(tries):
             try:
                 poll_response = self.get_poll_response(poll_url, **params)
-                poll_status = self.get_poll_status(poll_response)
 
-                if poll_status not in success_list:
-                    # polling_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
-                    # print("{0}. Sleeping for {1} seconds.".format(polling_time, delay))
-                    time.sleep(delay)
-                    delay *= backoff
-                else:
+                if self.is_poll_complete(poll_response):
                     return poll_response
+                else:
+                    time.sleep(delay)
+
             except socket.error as e:
-                print("Connection droppped with error code {0}".format(e.errno))
+                raise RuntimeError("Connection dropped with error code {0}".format(e.errno))
         raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
+
+    def is_poll_complete(self, poll_resp):
+        """
+        Checks the condition in poll response to determine if it is complete
+        and no subsequent poll requests should be done.
+        """
+        success_list = ['UpdatesComplete', True, 'COMPLETE']
+        status = poll_resp.get('Status', poll_resp.get('status'))
+        if not status:
+            raise RuntimeError('Unable to get poll response status.')
+        return status in success_list
 
     @staticmethod
     def _default_session_headers():
@@ -288,35 +292,10 @@ class CarHire(Transport):
 
         return "{url}{path}".format(url=self.API_HOST, path=poll_path)
 
-    def get_poll_status(self, poll_response):
-        return poll_response['in_progress']
-
-    def poll_session(self, poll_url, **params):
-        """
-        Poll the URL
-        """
-        tries = 10
-        initial_delay = 2
-        delay = 1
-        time.sleep(initial_delay)
-        # success_list = ['UpdatesComplete', True]
-        backoff = 2
-
-        for n in range(tries):
-            try:
-                poll_response = self.get_poll_response(poll_url, **params)
-                # poll_status = self.get_poll_status(poll_response)
-
-                if len(poll_response['websites']) == 0:
-                    # polling_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
-                    # print("{0}. Sleeping for {1} seconds.".format(polling_time, delay))
-                    time.sleep(delay)
-                    delay *= backoff
-                else:
-                    return poll_response
-            except socket.error as e:
-                print("Connection droppped with error code {0}".format(e.errno))
-        raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
+    def is_poll_complete(self, poll_resp):
+        if len(poll_resp['websites']) == 0:
+            return False
+        return all(not bool(website['in_progress']) for website in poll_resp['websites'])
 
 
 class Hotels(Transport):
@@ -374,6 +353,3 @@ class Hotels(Transport):
                                       callback=lambda resp: resp.headers['location'])
 
         return "{url}{path}".format(url=self.API_HOST, path=poll_path)
-
-    def get_poll_status(self, poll_response):
-        return poll_response['status']
