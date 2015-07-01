@@ -1,14 +1,35 @@
 # -*- coding: utf-8 -*-
-import requests
+import sys
 import time
-import socket
+import logging
+import requests
+
+
+def configure_logger(log_level=logging.INFO):
+    logger = logging.getLogger(__name__)
+    logger.setLevel(log_level)
+    sa = logging.StreamHandler(stream=sys.stdout)
+    formatter = logging.Formatter('%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s')
+    sa.setFormatter(formatter)
+    logger.addHandler(sa)
+    return logger
+
+log = configure_logger()
+STRICT, GRACEFUL, IGNORE = 'strict', 'graceful', 'ignore'
 
 
 class ExceededRetries(Exception):
+    """Is thrown when allowed number of polls were performed but response is not complete yet."""
     pass
 
 
-class ResponseException(Exception):
+class ResponseError(Exception):
+    """Is thrown when API response contains 'errors' field."""
+    pass
+
+
+class EmptyResponse(Exception):
+    """Is thrown when API returns empty response."""
     pass
 
 
@@ -32,10 +53,32 @@ class Transport(object):
         """
         return self.poll_session(self.create_session(**params))
 
-    def make_request(self, service_url, method='get', headers=None, data=None, callback=None, **params):
+    def make_request(self, service_url, method='get', headers=None, data=None,
+                     callback=None, errors=STRICT, **params):
         """
-        Reusable method for simple GET requests
+        Reusable method for performing requests.
+
+        :param service_url - URL to request
+        :param method - request method, default is 'get'
+        :param headers - request headers
+        :param data - post data
+        :param callback - callback to be applied to response,
+                          default callback will parse response as json object.
+        :param errors - specifies communication errors handling mode, possible values are:
+                         * strict (default) - throw an error as soon as one occurred
+                         * graceful - ignore certain errors, e.g. EmptyResponse
+                         * ignore - ignore all errors and return a result in any case.
+                                    NOTE that it DOES NOT mean that no exceptions can be
+                                    raised from this method, it mostly ignores communication
+                                    related errors.
+                         * None or empty string equals to default
+        :param params - additional query parameters for request
         """
+        error_modes = (STRICT, GRACEFUL, IGNORE)
+        error_mode = errors or GRACEFUL
+        if error_mode.lower() not in error_modes:
+            raise ValueError('Possible values for errors argument are: %s' % ', '.join(error_modes))
+
         if callback is None:
             callback = self._default_resp_callback
 
@@ -47,7 +90,11 @@ class Transport(object):
         request = getattr(requests, method.lower())
         r = request(service_url, headers=headers, data=data, params=params)
 
-        return callback(r)
+        try:
+            r.raise_for_status()
+            return callback(r)
+        except Exception as e:
+            return self._with_error_handling(r, e, error_mode)
 
     def get_markets(self, market):
         """
@@ -71,35 +118,34 @@ class Transport(object):
 
         return self.make_request(url, query=query)
 
-    def get_poll_response(self, poll_url, **params):
-        return self.make_request(poll_url, **params)
-
     def create_session(self, **params):
         """Creates a session for polling. Should be implemented by sub-classes"""
         raise NotImplementedError('Should be implemented by a sub-class.')
 
-    def poll_session(self, poll_url, initial_delay=2, delay=1, tries=10, **params):
+    def poll_session(self, poll_url, initial_delay=2, delay=1, tries=10, errors=STRICT, **params):
         """
         Poll the URL
         :param poll_url - URL to poll, should be returned by 'create_session' call
         :param initial_delay - specifies how many seconds to wait before the first poll
         :param delay - specifies how many seconds to wait between the polls
         :param tries - number of polls to perform
+        :param errors - errors handling mode, see corresponding parameter in 'make_request' method
         :param params - additional query params for each poll request
         """
         time.sleep(initial_delay)
+        poll_response = None
         for n in range(tries):
-            try:
-                poll_response = self.get_poll_response(poll_url, **params)
+            poll_response = self.make_request(poll_url, errors=errors, **params)
 
-                if self.is_poll_complete(poll_response):
-                    return poll_response
-                else:
-                    time.sleep(delay)
+            if poll_response and self.is_poll_complete(poll_response):
+                return poll_response
+            else:
+                time.sleep(delay)
 
-            except socket.error as e:
-                raise RuntimeError("Connection dropped with error code {0}".format(e.errno))
-        raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
+        if STRICT == errors:
+            raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
+        else:
+            return poll_response
 
     def is_poll_complete(self, poll_resp):
         """
@@ -113,12 +159,64 @@ class Transport(object):
         return status in success_list
 
     @staticmethod
+    def _with_error_handling(resp, error, mode):
+
+        def safe_json(r):
+            try:
+                return r.json()
+            except ValueError as e:
+                log.error(e)
+                return None
+
+        if isinstance(error, requests.HTTPError):
+            if resp.status_code == 400:
+                # It means that request parameters were rejected by the server,
+                # so we need to enrich standard error message with 'ValidationErrors'
+                # from the response
+                resp_json = safe_json(resp)
+                if resp_json and 'ValidationErrors' in resp_json:
+                    error = requests.HTTPError(
+                        '%s: %s' % (error.message,
+                                    '\n\t'.join(e['Message'] for e in resp_json['ValidationErrors'])),
+                        response=resp)
+            elif resp.status_code == 429:
+                error = requests.HTTPError('%sToo many requests in the last minute.' % error.message,
+                                           response=resp)
+
+        if STRICT == mode:
+            raise error
+        elif GRACEFUL == mode:
+            if isinstance(error, EmptyResponse):
+                # Empty response is returned by the API occasionally,
+                # in this case it makes sense to ignore it and retry.
+                log.warning(error)
+                return None
+
+            elif isinstance(error, requests.HTTPError):
+                # Ignoring 'Too many requests' error,
+                # since subsequent retries will come after a delay.
+                if resp.status_code == 429:    # Too many requests
+                    log.warning(error)
+                    return safe_json(resp)
+                else:
+                    raise error
+            else:
+                raise error
+        else:
+            # ignore everything, just log it and return whatever response we have
+            log.error(error)
+            return safe_json(resp)
+
+    @staticmethod
     def _default_session_headers():
         return {'content-type': 'application/x-www-form-urlencoded',
                 'accept': 'application/json'}
 
     @staticmethod
     def _default_resp_callback(resp):
+        if not resp or not resp.content:
+            raise EmptyResponse('Response has no content.')
+
         try:
             resp_json = resp.json()
         except ValueError:
@@ -126,8 +224,8 @@ class Transport(object):
 
         if 'errors' in resp_json:
             errors = resp_json['errors']
-            msg = '\n\t%s' % '\n\t'.join(errors) if len(errors) > 1 else errors[0]
-            raise ResponseException(msg)
+            msg = ('\n\t%s' % '\n\t'.join(errors)) if len(errors) > 1 else errors[0]
+            raise ResponseError(msg)
 
         return resp_json
 
