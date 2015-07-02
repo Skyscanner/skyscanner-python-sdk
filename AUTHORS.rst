@@ -10,4 +10,4 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Denis Dudnik <deniska.dudnik@gmail.com>
