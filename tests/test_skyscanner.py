@@ -9,15 +9,19 @@ Tests for `skyscanner` module.
 """
 
 import unittest
+import json
 from datetime import datetime, timedelta
+from requests import HTTPError
 
-from skyscanner.skyscanner import Flights, Transport, FlightsCache, CarHire, Hotels
+from skyscanner.skyscanner import (Flights, Transport, FlightsCache, CarHire, Hotels,
+                                   EmptyResponse, ResponseError, STRICT, GRACEFUL, IGNORE)
 
 
 class SkyScannerTestCase(unittest.TestCase):
     """Generic TestCase class to support default failure messages."""
 
     def setUp(self):
+        self.api_key = 'prtl6749387986743898559646983194'
         self.result = None
 
     def tearDown(self):
@@ -28,13 +32,101 @@ class SkyScannerTestCase(unittest.TestCase):
         super(SkyScannerTestCase, self).assertTrue(expr, msg=msg or default_message)
 
 
+class FakeResponse(object):
+
+    def __init__(self, status_code=200, content=None):
+        self.content = content or ''
+        self.status_code = status_code
+
+    def json(self):
+        return json.loads(self.content)
+
+
+class TestTransport(SkyScannerTestCase):
+
+    def test_create_session(self):
+        with self.assertRaises(NotImplementedError):
+            Transport(self.api_key).create_session()
+
+    def test_with_error_handling_strict(self):
+        with self.assertRaises(RuntimeError):
+            Transport._with_error_handling(FakeResponse(), RuntimeError, STRICT)
+
+        with self.assertRaises(HTTPError):
+            Transport._with_error_handling(FakeResponse(status_code=404), HTTPError(), STRICT)
+
+        with self.assertRaises(HTTPError) as e:
+            Transport._with_error_handling(FakeResponse(status_code=429), HTTPError('429: '), STRICT)
+            self.assertEqual(e.message, '429: Too many requests in the last minute.')
+
+        with self.assertRaises(HTTPError) as e:
+            Transport._with_error_handling(FakeResponse(status_code=400), HTTPError('400'), STRICT)
+            self.assertEqual(e.message, '400')
+
+        with self.assertRaises(HTTPError) as e:
+            Transport._with_error_handling(FakeResponse(status_code=400,
+                                                        content='{"ValidationErrors": '
+                                                                '[{"Message": "1"}, {"Message": "2"}]}'),
+                                           HTTPError('400'), STRICT)
+            self.assertEqual(e.message, '400: %s' % '\n\t'.join(['1', '2']))
+
+    def test_with_error_handling_graceful(self):
+        result = Transport._with_error_handling(FakeResponse(), EmptyResponse(), GRACEFUL)
+        self.assertIsNone(result)
+
+        result = Transport._with_error_handling(FakeResponse(content='{"valid": 1}', status_code=429),
+                                                HTTPError(), GRACEFUL)
+        self.assertIsNotNone(result)
+        self.assertTrue('valid' in result)
+        self.assertEqual(result['valid'], 1)
+
+        result = Transport._with_error_handling(FakeResponse(content='invalid', status_code=429),
+                                                HTTPError(), GRACEFUL)
+        self.assertIsNone(result)
+
+        with self.assertRaises(HTTPError):
+            Transport._with_error_handling(FakeResponse(), HTTPError(), GRACEFUL)
+        with self.assertRaises(RuntimeError):
+            Transport._with_error_handling(FakeResponse(), RuntimeError(), GRACEFUL)
+
+    def test_with_error_handling_ignore(self):
+        result = Transport._with_error_handling(FakeResponse(), EmptyResponse(), IGNORE)
+        self.assertIsNone(result)
+        result = Transport._with_error_handling(FakeResponse(), RuntimeError(), IGNORE)
+        self.assertIsNone(result)
+        result = Transport._with_error_handling(FakeResponse(), HTTPError(), IGNORE)
+        self.assertIsNone(result)
+
+        result = Transport._with_error_handling(FakeResponse(content='{"valid": 1}'), HTTPError(), IGNORE)
+        self.assertIsNotNone(result)
+        self.assertTrue('valid' in result)
+        self.assertEqual(result['valid'], 1)
+
+    def test_default_resp_callback(self):
+        with self.assertRaises(EmptyResponse):
+            Transport._default_resp_callback(None)
+        with self.assertRaises(EmptyResponse):
+            Transport._default_resp_callback(FakeResponse(content=''))
+
+        with self.assertRaises(ValueError):
+            Transport._default_resp_callback(FakeResponse(content='invalid json'))
+
+        with self.assertRaises(ResponseError) as e:
+            Transport._default_resp_callback(FakeResponse(content='{"errors": ["Wrong API key", "Another error"]}'))
+            self.assertEqual(e.message, '\n\t%s' % '\n\t'.join(['Wrong API key', 'Another error']))
+
+        resp_json = Transport._default_resp_callback(FakeResponse(content='{"valid": 1}'))
+        self.assertIsNotNone(resp_json)
+        self.assertTrue('valid' in resp_json)
+        self.assertEqual(resp_json['valid'], 1)
+
+
 class TestCarHire(SkyScannerTestCase):
 
     def setUp(self):
         # API Key that's meant for testing only
         # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
         super(TestCarHire, self).setUp()
-        self.api_key = 'prtl6749387986743898559646983194'
         datetime_format = '%Y-%m-%dT%H:%S'
         pickup_datetime = datetime.now()
         dropoff_datetime = pickup_datetime + timedelta(days=3)
@@ -101,7 +193,6 @@ class TestHotels(SkyScannerTestCase):
         # API Key that's meant for testing only
         # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
         super(TestHotels, self).setUp()
-        self.api_key = 'prtl6749387986743898559646983194'
         datetime_format = '%Y-%m-%d'
         checkin_datetime = datetime.now()
         checkout_datetime = checkin_datetime + timedelta(days=4)
@@ -166,7 +257,6 @@ class TestFlights(SkyScannerTestCase):
         # API Key that's meant for testing only
         # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
         super(TestFlights, self).setUp()
-        self.api_key = 'prtl6749387986743898559646983194'
         datetime_format = '%Y-%m'
         outbound_datetime = datetime.now()
         inbound_datetime = outbound_datetime + timedelta(days=31)
