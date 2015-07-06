@@ -14,7 +14,8 @@ from datetime import datetime, timedelta
 from requests import HTTPError
 
 from skyscanner.skyscanner import (Flights, Transport, FlightsCache, CarHire, Hotels,
-                                   EmptyResponse, ResponseError, STRICT, GRACEFUL, IGNORE)
+                                   EmptyResponse, ResponseError, MissingParameter,
+                                   STRICT, GRACEFUL, IGNORE)
 
 
 class SkyScannerTestCase(unittest.TestCase):
@@ -119,6 +120,17 @@ class TestTransport(SkyScannerTestCase):
         self.assertIsNotNone(resp_json)
         self.assertTrue('valid' in resp_json)
         self.assertEqual(resp_json['valid'], 1)
+
+    def test_construct_params(self):
+        params = dict(a=1, b=2, c=3)
+        self.assertEqual('1/2/3', Transport._construct_params(params, ('a', 'b', 'c')))
+        params = dict(a=1, b=2)
+        self.assertEqual('1/2', Transport._construct_params(params, ('a', 'b'), ('c',)))
+        params = dict(a=1, b=2, c=3)
+        self.assertEqual('1/2/3', Transport._construct_params(params, ('a', 'b'), ('c',)))
+        with self.assertRaises(MissingParameter):
+            params = dict(a=1, c=3)
+            Transport._construct_params(params, ('a', 'b'), ('c',))
 
 
 class TestCarHire(SkyScannerTestCase):
