@@ -53,11 +53,11 @@ class Transport(object):
             raise ValueError('API key must be specified.')
         self.api_key = api_key
 
-    def get_result(self, **params):
+    def get_result(self, errors=STRICT, **params):
         """
         Get all results, no filtering, etc. by creating and polling the session.
         """
-        return self.poll_session(self.create_session(**params))
+        return self.poll_session(self.create_session(**params), errors=errors)
 
     def make_request(self, service_url, method='get', headers=None, data=None,
                      callback=None, errors=STRICT, **params):
@@ -301,7 +301,7 @@ class FlightsCache(Flights):
     BROWSE_ROUTES_SERVICE_URL = '{api_host}/apiservices/browseroutes/v1.0'.format(api_host=Transport.API_HOST)
     BROWSE_DATES_SERVICE_URL = '{api_host}/apiservices/browsedates/v1.0'.format(api_host=Transport.API_HOST)
     BROWSE_GRID_SERVICE_URL = '{api_host}/apiservices/browsegrid/v1.0'.format(api_host=Transport.API_HOST)
-    _REQ_PARAMS = ('country', 'currency', 'locale', 'originplace', 'destinationplace', 'outbounddate')
+    _REQ_PARAMS = ('market', 'currency', 'locale', 'originplace', 'destinationplace', 'outbounddate')
     _OPT_PARAMS = ('inbounddate',)
 
     def get_cheapest_price_by_date(self, **params):
@@ -313,7 +313,7 @@ class FlightsCache(Flights):
             params_path=self._construct_params(params, self._REQ_PARAMS, self._OPT_PARAMS)
         )
 
-        return self.make_request(service_url, **params)
+        return self.make_request(service_url, headers=self._headers(), **params)
 
     def get_cheapest_price_by_route(self, **params):
         """
@@ -324,7 +324,7 @@ class FlightsCache(Flights):
             params_path=self._construct_params(params, self._REQ_PARAMS, self._OPT_PARAMS)
 
         )
-        return self.make_request(service_url, **params)
+        return self.make_request(service_url, headers=self._headers(), **params)
 
     def get_cheapest_quotes(self, **params):
         """
@@ -334,7 +334,7 @@ class FlightsCache(Flights):
             url=self.BROWSE_QUOTES_SERVICE_URL,
             params_path=self._construct_params(params, self._REQ_PARAMS, self._OPT_PARAMS)
         )
-        return self.make_request(service_url, **params)
+        return self.make_request(service_url, headers=self._headers(), **params)
 
     def get_grid_prices_by_date(self, **params):
         """
@@ -344,7 +344,11 @@ class FlightsCache(Flights):
             url=self.BROWSE_GRID_SERVICE_URL,
             params_path=self._construct_params(params, self._REQ_PARAMS, self._OPT_PARAMS)
         )
-        return self.make_request(service_url, **params)
+        return self.make_request(service_url, headers=self._headers(), **params)
+
+    @staticmethod
+    def _headers():
+        return {'Accept': 'application/json'}
 
 
 class CarHire(Transport):
