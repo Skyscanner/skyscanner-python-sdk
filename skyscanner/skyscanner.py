@@ -3,9 +3,13 @@ import sys
 import time
 import logging
 import requests
+try:
+    import lxml.etree as etree
+except ImportError:
+    import xml.etree.ElementTree as etree
 
 
-def configure_logger(log_level=logging.INFO):
+def configure_logger(log_level=logging.WARN):
     logger = logging.getLogger(__name__)
     logger.setLevel(log_level)
     sa = logging.StreamHandler(stream=sys.stdout)
@@ -23,11 +27,6 @@ class ExceededRetries(Exception):
     pass
 
 
-class ResponseError(Exception):
-    """Is thrown when API response contains 'errors' field."""
-    pass
-
-
 class EmptyResponse(Exception):
     """Is thrown when API returns empty response."""
     pass
@@ -39,7 +38,6 @@ class MissingParameter(KeyError):
 
 
 class Transport(object):
-
     """
     Parent class for initialization
     """
@@ -47,11 +45,20 @@ class Transport(object):
     MARKET_SERVICE_URL = '{api_host}/apiservices/reference/v1.0/countries'.format(api_host=API_HOST)
     LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/autosuggest/v1.0'.format(api_host=API_HOST)
     LOCATION_AUTOSUGGEST_PARAMS = ('market', 'currency', 'locale')
+    _SUPPORTED_FORMATS = ('json', 'xml')
 
-    def __init__(self, api_key):
+    def __init__(self, api_key, response_format='json'):
+        """
+        :param api_key - The API key to identify ourselves
+        :param response_format - specify preferred format of the response, default is 'json'
+        """
         if not api_key:
             raise ValueError('API key must be specified.')
+        if response_format.lower() not in self._SUPPORTED_FORMATS:
+            raise ValueError('Unknown response format: %s, supported formats are: %s' %
+                             (response_format, ', '.join(self._SUPPORTED_FORMATS)))
         self.api_key = api_key
+        self.response_format = response_format.lower()
 
     def get_result(self, errors=STRICT, **params):
         """
@@ -97,13 +104,14 @@ class Transport(object):
         log.debug('* Request URL: %s' % service_url)
         log.debug('* Request method: %s' % method)
         log.debug('* Request query params: %s' % params)
+        log.debug('* Request headers: %s' % headers)
         r = request(service_url, headers=headers, data=data, params=params)
 
         try:
             r.raise_for_status()
             return callback(r)
         except Exception as e:
-            return self._with_error_handling(r, e, error_mode)
+            return self._with_error_handling(r, e, error_mode, self.response_format)
 
     def get_markets(self, market):
         """
@@ -112,8 +120,7 @@ class Transport(object):
         """
         url = "{url}/{market}".format(url=self.MARKET_SERVICE_URL,
                                       market=market)
-
-        return self.make_request(url)
+        return self.make_request(url, headers=self._headers())
 
     def location_autosuggest(self, **params):
         """
@@ -128,7 +135,7 @@ class Transport(object):
             url=self.LOCATION_AUTOSUGGEST_URL,
             params_path=self._construct_params(params, self.LOCATION_AUTOSUGGEST_PARAMS)
         )
-        return self.make_request(service_url, **params)
+        return self.make_request(service_url, headers=self._headers(), **params)
 
     def create_session(self, **params):
         """Creates a session for polling. Should be implemented by sub-classes"""
@@ -147,9 +154,10 @@ class Transport(object):
         time.sleep(initial_delay)
         poll_response = None
         for n in range(tries):
-            poll_response = self.make_request(poll_url, errors=errors, **params)
+            poll_response = self.make_request(poll_url, headers=self._headers(),
+                                              errors=errors, **params)
 
-            if poll_response and self.is_poll_complete(poll_response):
+            if self.is_poll_complete(poll_response):
                 return poll_response
             else:
                 time.sleep(delay)
@@ -164,33 +172,45 @@ class Transport(object):
         Checks the condition in poll response to determine if it is complete
         and no subsequent poll requests should be done.
         """
+        if poll_resp.parsed is None:
+            return False
         success_list = ['UpdatesComplete', True, 'COMPLETE']
-        status = poll_resp.get('Status', poll_resp.get('status'))
-        if not status:
+        status = None
+        if self.response_format == 'xml':
+            status = poll_resp.parsed.find('./Status').text
+        elif self.response_format == 'json':
+            status = poll_resp.parsed.get('Status', poll_resp.parsed.get('status'))
+        if status is None:
             raise RuntimeError('Unable to get poll response status.')
         return status in success_list
 
     @staticmethod
-    def _with_error_handling(resp, error, mode):
+    def _with_error_handling(resp, error, mode, response_format):
 
-        def safe_json(r):
+        def safe_parse(r):
             try:
-                return r.json()
-            except ValueError as e:
-                log.error(e)
-                return None
+                return Transport._parse_resp(r, response_format)
+            except (ValueError, SyntaxError) as ex:
+                log.error(ex)
+                r.parsed = None
+                return r
 
         if isinstance(error, requests.HTTPError):
             if resp.status_code == 400:
                 # It means that request parameters were rejected by the server,
                 # so we need to enrich standard error message with 'ValidationErrors'
                 # from the response
-                resp_json = safe_json(resp)
-                if resp_json and 'ValidationErrors' in resp_json:
+                resp = safe_parse(resp)
+                if resp.parsed is not None:
+                    parsed_resp = resp.parsed
+                    messages = []
+                    if response_format == 'xml' and parsed_resp.find('./ValidationErrors') is not None:
+                        messages = [e.find('./Message').text
+                                    for e in parsed_resp.findall('./ValidationErrors/ValidationErrorDto')]
+                    elif response_format == 'json' and 'ValidationErrors' in parsed_resp:
+                        messages = [e['Message'] for e in parsed_resp['ValidationErrors']]
                     error = requests.HTTPError(
-                        '%s: %s' % (error.message,
-                                    '\n\t'.join(e['Message'] for e in resp_json['ValidationErrors'])),
-                        response=resp)
+                        '%s: %s' % (error.message, '\n\t'.join(messages)), response=resp)
             elif resp.status_code == 429:
                 error = requests.HTTPError('%sToo many requests in the last minute.' % error.message,
                                            response=resp)
@@ -202,14 +222,15 @@ class Transport(object):
                 # Empty response is returned by the API occasionally,
                 # in this case it makes sense to ignore it and retry.
                 log.warning(error)
-                return None
+                resp.parsed = None
+                return resp
 
             elif isinstance(error, requests.HTTPError):
                 # Ignoring 'Too many requests' error,
                 # since subsequent retries will come after a delay.
                 if resp.status_code == 429:    # Too many requests
                     log.warning(error)
-                    return safe_json(resp)
+                    return safe_parse(resp)
                 else:
                     raise error
             else:
@@ -217,29 +238,27 @@ class Transport(object):
         else:
             # ignore everything, just log it and return whatever response we have
             log.error(error)
-            return safe_json(resp)
+            return safe_parse(resp)
 
-    @staticmethod
-    def _default_session_headers():
-        return {'content-type': 'application/x-www-form-urlencoded',
-                'accept': 'application/json'}
+    def _session_headers(self):
+        headers = self._headers()
+        headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
+        return headers
 
-    @staticmethod
-    def _default_resp_callback(resp):
+    def _headers(self):
+        return {'Accept': 'application/%s' % self.response_format}
+
+    def _default_resp_callback(self, resp):
         if not resp or not resp.content:
             raise EmptyResponse('Response has no content.')
 
         try:
-            resp_json = resp.json()
-        except ValueError:
-            raise ValueError('Invalid JSON in response: %s' % resp.content)
+            parsed_resp = self._parse_resp(resp, self.response_format)
+        except (ValueError, SyntaxError):
+            raise ValueError('Invalid %s in response: %s...' %
+                             (self.response_format.upper(), resp.content[:100]))
 
-        if 'errors' in resp_json:
-            errors = resp_json['errors']
-            msg = ('\n\t%s' % '\n\t'.join(errors)) if len(errors) > 1 else errors[0]
-            raise ResponseError(msg)
-
-        return resp_json
+        return parsed_resp
 
     @staticmethod
     def _construct_params(params, required_keys, opt_keys=None):
@@ -254,6 +273,11 @@ class Transport(object):
             params_list.extend([params.pop(key) for key in opt_keys if key in params])
         return '/'.join(str(p) for p in params_list)
 
+    @staticmethod
+    def _parse_resp(resp, response_format):
+        resp.parsed = etree.fromstring(resp.content) if response_format == 'xml' else resp.json()
+        return resp
+
 
 class Flights(Transport):
 
@@ -264,9 +288,6 @@ class Flights(Transport):
 
     PRICING_SESSION_URL = '{api_host}/apiservices/pricing/v1.0'.format(api_host=Transport.API_HOST)
 
-    def __init__(self, api_key):
-        Transport.__init__(self, api_key)
-
     def create_session(self, **params):
         """
         Create the session
@@ -275,7 +296,7 @@ class Flights(Transport):
         """
         return self.make_request(self.PRICING_SESSION_URL,
                                  method='post',
-                                 headers=self._default_session_headers(),
+                                 headers=self._session_headers(),
                                  callback=lambda resp: resp.headers['location'],
                                  data=params)
 
@@ -286,6 +307,7 @@ class Flights(Transport):
         """
         return self.make_request("%s/booking" % poll_url,
                                  method='put',
+                                 headers=self._headers(),
                                  callback=lambda resp: resp.headers['location'],
                                  **params)
 
@@ -346,10 +368,6 @@ class FlightsCache(Flights):
         )
         return self.make_request(service_url, headers=self._headers(), **params)
 
-    @staticmethod
-    def _headers():
-        return {'Accept': 'application/json'}
-
 
 class CarHire(Transport):
 
@@ -361,9 +379,6 @@ class CarHire(Transport):
     PRICING_SESSION_URL = '{api_host}/apiservices/carhire/liveprices/v2'.format(api_host=Transport.API_HOST)
     LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/hotels/autosuggest/v2'.format(api_host=Transport.API_HOST)
     LOCATION_AUTOSUGGEST_PARAMS = ('market', 'currency', 'locale', 'query')
-
-    def __init__(self, api_key):
-        Transport.__init__(self, api_key)
 
     def create_session(self, **params):
         """
@@ -381,16 +396,23 @@ class CarHire(Transport):
         )
 
         poll_path = self.make_request(service_url,
-                                      headers=self._default_session_headers(),
+                                      headers=self._session_headers(),
                                       callback=lambda resp: resp.headers['location'],
                                       userip=params['userip'])
 
         return "{url}{path}".format(url=self.API_HOST, path=poll_path)
 
     def is_poll_complete(self, poll_resp):
-        if len(poll_resp['websites']) == 0:
+        if poll_resp.parsed is None:
             return False
-        return all(not bool(website['in_progress']) for website in poll_resp['websites'])
+        websites = None
+        if self.response_format == 'xml':
+            websites = poll_resp.parsed.findall('./Websites/WebsiteDto')
+        elif self.response_format == 'json':
+            websites = poll_resp.parsed['websites']
+        if len(websites) == 0:
+            return False
+        return all(not bool(w.get('in_progress')) for w in websites)
 
 
 class Hotels(Transport):
@@ -404,9 +426,6 @@ class Hotels(Transport):
     PRICING_SESSION_URL = '{api_host}/apiservices/hotels/liveprices/v2'.format(api_host=Transport.API_HOST)
     LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/hotels/autosuggest/v2'.format(api_host=Transport.API_HOST)
     LOCATION_AUTOSUGGEST_PARAMS = ('market', 'currency', 'locale', 'query')
-
-    def __init__(self, api_key):
-        Transport.__init__(self, api_key)
 
     def create_session(self, **params):
         """
@@ -423,7 +442,7 @@ class Hotels(Transport):
         )
 
         poll_path = self.make_request(service_url,
-                                      headers=self._default_session_headers(),
+                                      headers=self._session_headers(),
                                       callback=lambda resp: resp.headers['location'])
 
         return "{url}{path}".format(url=self.API_HOST, path=poll_path)
