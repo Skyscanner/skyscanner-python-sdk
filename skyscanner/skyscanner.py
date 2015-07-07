@@ -45,7 +45,8 @@ class Transport(object):
     """
     API_HOST = 'http://partners.api.skyscanner.net'
     MARKET_SERVICE_URL = '{api_host}/apiservices/reference/v1.0/countries'.format(api_host=API_HOST)
-    LOCATION_AUTOSUGGEST_SERVICE_URL = '{api_host}/apiservices/autosuggest/v1.0'.format(api_host=API_HOST)
+    LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/autosuggest/v1.0'.format(api_host=API_HOST)
+    LOCATION_AUTOSUGGEST_PARAMS = ('market', 'currency', 'locale')
 
     def __init__(self, api_key):
         if not api_key:
@@ -93,6 +94,9 @@ class Transport(object):
             })
 
         request = getattr(requests, method.lower())
+        log.debug('* Request URL: %s' % service_url)
+        log.debug('* Request method: %s' % method)
+        log.debug('* Request query params: %s' % params)
         r = request(service_url, headers=headers, data=data, params=params)
 
         try:
@@ -111,17 +115,20 @@ class Transport(object):
 
         return self.make_request(url)
 
-    def location_autosuggest(self, query, market, currency, locale):
+    def location_autosuggest(self, **params):
         """
-        Location Autosuggest Service
-        Doc URL: http://business.skyscanner.net/portal/en-GB/Documentation/Autosuggest
-        Format: {API_HOST}/apiservices/autosuggest/v1.0/{market}/{currency}/{locale}/?query={query}&apiKey={apiKey}
+        Location Autosuggest Services
+        Doc URLs: http://business.skyscanner.net/portal/en-GB/Documentation/Autosuggest
+                  http://business.skyscanner.net/portal/en-GB/Documentation/CarHireAutoSuggest
+                  http://business.skyscanner.net/portal/en-GB/Documentation/HotelsAutoSuggest
+        Format: Generic -        {LOCATION_AUTOSUGGEST_URL}/{market}/{currency}/{locale}/?query={query}&apiKey={apiKey}
+                CarHire/Hotels - {LOCATION_AUTOSUGGEST_URL}/{market}/{currency}/{locale}/{query}?apiKey={apiKey}
         """
-
-        url = "{url}/{market}/{currency}/{locale}/".format(url=self.LOCATION_AUTOSUGGEST_SERVICE_URL,
-                                                           market=market, currency=currency, locale=locale)
-
-        return self.make_request(url, query=query)
+        service_url = "{url}/{params_path}".format(
+            url=self.LOCATION_AUTOSUGGEST_URL,
+            params_path=self._construct_params(params, self.LOCATION_AUTOSUGGEST_PARAMS)
+        )
+        return self.make_request(service_url, **params)
 
     def create_session(self, **params):
         """Creates a session for polling. Should be implemented by sub-classes"""
@@ -240,11 +247,11 @@ class Transport(object):
         Construct params list in order of given keys.
         """
         try:
-            params_list = [params[key] for key in required_keys]
+            params_list = [params.pop(key) for key in required_keys]
         except KeyError as e:
             raise MissingParameter('Missing expected request parameter: %s' % e.message)
         if opt_keys:
-            params_list.extend([params[key] for key in opt_keys if key in params])
+            params_list.extend([params.pop(key) for key in opt_keys if key in params])
         return '/'.join(str(p) for p in params_list)
 
 
@@ -349,19 +356,10 @@ class CarHire(Transport):
 
     PRICING_SESSION_URL = '{api_host}/apiservices/carhire/liveprices/v2'.format(api_host=Transport.API_HOST)
     LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/hotels/autosuggest/v2'.format(api_host=Transport.API_HOST)
+    LOCATION_AUTOSUGGEST_PARAMS = ('market', 'currency', 'locale', 'query')
 
     def __init__(self, api_key):
         Transport.__init__(self, api_key)
-
-    def location_autosuggest(self, **params):
-        """
-        http://partners.api.skyscanner.net/apiservices/hotels/autosuggest/v2/{market}/{currency}/{locale}/{query}?apikey={apikey}
-        """
-        service_url = "{url}/{params_path}".format(
-            url=self.LOCATION_AUTOSUGGEST_URL,
-            params_path=self._construct_params(params, ('market', 'currency', 'locale', 'query'))
-        )
-        return self.make_request(service_url, **params)
 
     def create_session(self, **params):
         """
@@ -401,19 +399,10 @@ class Hotels(Transport):
 
     PRICING_SESSION_URL = '{api_host}/apiservices/hotels/liveprices/v2'.format(api_host=Transport.API_HOST)
     LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/hotels/autosuggest/v2'.format(api_host=Transport.API_HOST)
+    LOCATION_AUTOSUGGEST_PARAMS = ('market', 'currency', 'locale', 'query')
 
     def __init__(self, api_key):
         Transport.__init__(self, api_key)
-
-    def location_autosuggest(self, **params):
-        """
-        {API_HOST}/apiservices/hotels/autosuggest/v2/{market}/{currency}/{locale}/{query}?apikey={apikey}
-        """
-        service_url = "{url}/{params_path}".format(
-            url=self.LOCATION_AUTOSUGGEST_URL,
-            params_path=self._construct_params(params, ('market', 'currency', 'locale', 'query'))
-        )
-        return self.make_request(service_url, **params)
 
     def create_session(self, **params):
         """

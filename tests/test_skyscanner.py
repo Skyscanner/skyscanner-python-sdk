@@ -45,6 +45,23 @@ class FakeResponse(object):
 
 class TestTransport(SkyScannerTestCase):
 
+    def test_get_markets(self):
+        transport = Transport(self.api_key)
+        self.result = transport.get_markets('en-GB')
+
+        self.assertTrue('Countries' in self.result)
+        self.assertTrue(len(self.result['Countries']) > 0)
+
+    def test_location_autosuggest(self):
+        transport = Transport(self.api_key)
+        self.result = transport.location_autosuggest(query='KUL',
+                                                     market='UK',
+                                                     currency='GBP',
+                                                     locale='en-GB')
+
+        self.assertTrue('Places' in self.result)
+        self.assertTrue(len(self.result['Places']) > 0)
+
     def test_create_session(self):
         with self.assertRaises(NotImplementedError):
             Transport(self.api_key).create_session()
@@ -350,20 +367,6 @@ class TestFlights(SkyScannerTestCase):
             adults=1)
 
         self.assertTrue(poll_url)
-
-    def test_get_markets(self):
-        transport = Transport(self.api_key)
-        self.result = transport.get_markets('en-GB')
-
-        self.assertTrue('Countries' in self.result)
-        self.assertTrue(len(self.result['Countries']) > 0)
-
-    def test_location_autosuggest(self):
-        transport = Transport(self.api_key)
-        self.result = transport.location_autosuggest('KUL', 'UK', 'GBP', 'en-GB')
-
-        self.assertTrue('Places' in self.result)
-        self.assertTrue(len(self.result['Places']) > 0)
 
     # def test_poll_session(self):
     #     flights_service = Flights(self.api_key)
