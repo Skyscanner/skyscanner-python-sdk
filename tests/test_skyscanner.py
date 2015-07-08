@@ -14,13 +14,16 @@ from datetime import datetime, timedelta
 from requests import HTTPError
 
 from skyscanner.skyscanner import (Flights, Transport, FlightsCache, CarHire, Hotels,
-                                   EmptyResponse, ResponseError, STRICT, GRACEFUL, IGNORE)
+                                   EmptyResponse, ResponseError, MissingParameter,
+                                   STRICT, GRACEFUL, IGNORE)
 
 
 class SkyScannerTestCase(unittest.TestCase):
     """Generic TestCase class to support default failure messages."""
 
     def setUp(self):
+        # API Key that's meant for testing only
+        # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
         self.api_key = 'prtl6749387986743898559646983194'
         self.result = None
 
@@ -43,6 +46,23 @@ class FakeResponse(object):
 
 
 class TestTransport(SkyScannerTestCase):
+
+    def test_get_markets(self):
+        transport = Transport(self.api_key)
+        self.result = transport.get_markets('en-GB')
+
+        self.assertTrue('Countries' in self.result)
+        self.assertTrue(len(self.result['Countries']) > 0)
+
+    def test_location_autosuggest(self):
+        transport = Transport(self.api_key)
+        self.result = transport.location_autosuggest(query='KUL',
+                                                     market='UK',
+                                                     currency='GBP',
+                                                     locale='en-GB')
+
+        self.assertTrue('Places' in self.result)
+        self.assertTrue(len(self.result['Places']) > 0)
 
     def test_create_session(self):
         with self.assertRaises(NotImplementedError):
@@ -120,12 +140,21 @@ class TestTransport(SkyScannerTestCase):
         self.assertTrue('valid' in resp_json)
         self.assertEqual(resp_json['valid'], 1)
 
+    def test_construct_params(self):
+        params = dict(a=1, b=2, c=3)
+        self.assertEqual('1/2/3', Transport._construct_params(params, ('a', 'b', 'c')))
+        params = dict(a=1, b=2)
+        self.assertEqual('1/2', Transport._construct_params(params, ('a', 'b'), ('c',)))
+        params = dict(a=1, b=2, c=3)
+        self.assertEqual('1/2/3', Transport._construct_params(params, ('a', 'b'), ('c',)))
+        with self.assertRaises(MissingParameter):
+            params = dict(a=1, c=3)
+            Transport._construct_params(params, ('a', 'b'), ('c',))
+
 
 class TestCarHire(SkyScannerTestCase):
 
     def setUp(self):
-        # API Key that's meant for testing only
-        # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
         super(TestCarHire, self).setUp()
         datetime_format = '%Y-%m-%dT%H:%S'
         pickup_datetime = datetime.now()
@@ -190,8 +219,6 @@ class TestCarHire(SkyScannerTestCase):
 class TestHotels(SkyScannerTestCase):
 
     def setUp(self):
-        # API Key that's meant for testing only
-        # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
         super(TestHotels, self).setUp()
         datetime_format = '%Y-%m-%d'
         checkin_datetime = datetime.now()
@@ -254,8 +281,6 @@ class TestHotels(SkyScannerTestCase):
 class TestFlights(SkyScannerTestCase):
 
     def setUp(self):
-        # API Key that's meant for testing only
-        # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
         super(TestFlights, self).setUp()
         datetime_format = '%Y-%m'
         outbound_datetime = datetime.now()
@@ -271,7 +296,7 @@ class TestFlights(SkyScannerTestCase):
     def test_get_cheapest_quotes(self):
         flights_cache_service = FlightsCache(self.api_key)
         self.result = flights_cache_service.get_cheapest_quotes(
-            country='UK',
+            market='GB',
             currency='GBP',
             locale='en-GB',
             originplace='SIN-sky',
@@ -282,29 +307,28 @@ class TestFlights(SkyScannerTestCase):
         self.assertTrue('Quotes' in self.result)
         self.assertTrue(len(self.result['Quotes']) > 0)
 
-    # I'm getting the following result:
-    # {u'ValidationErrors': [{u'Message': u'For this query please use the following service [BrowseDates]'}]}
     def test_get_cheapest_price_by_route(self):
         flights_cache_service = FlightsCache(self.api_key)
         self.result = flights_cache_service.get_cheapest_price_by_route(
-            country='UK',
+            market='GB',
             currency='GBP',
             locale='en-GB',
-            originplace='SIN-sky',
-            destinationplace='KUL-sky',
+            originplace='GB',
+            destinationplace='DE',
             outbounddate=self.outbound,
             inbounddate=self.inbound)
 
-        print("result: %s" % self.result)
+        self.assertTrue('Routes' in self.result)
+        self.assertTrue(len(self.result['Routes']) > 0)
 
     def test_get_cheapest_price_by_date(self):
         flights_cache_service = FlightsCache(self.api_key)
         self.result = flights_cache_service.get_cheapest_price_by_date(
-            country='UK',
+            market='GB',
             currency='GBP',
             locale='en-GB',
-            originplace='SIN-sky',
-            destinationplace='KUL-sky',
+            originplace='SIN',
+            destinationplace='KUL',
             outbounddate=self.outbound,
             inbounddate=self.inbound)
 
@@ -314,11 +338,11 @@ class TestFlights(SkyScannerTestCase):
     def test_get_grid_prices_by_date(self):
         flights_cache_service = FlightsCache(self.api_key)
         self.result = flights_cache_service.get_grid_prices_by_date(
-            country='UK',
+            market='GB',
             currency='GBP',
             locale='en-GB',
-            originplace='SIN-sky',
-            destinationplace='KUL-sky',
+            originplace='SIN',
+            destinationplace='KUL',
             outbounddate=self.outbound,
             inbounddate=self.inbound)
 
@@ -338,20 +362,6 @@ class TestFlights(SkyScannerTestCase):
             adults=1)
 
         self.assertTrue(poll_url)
-
-    def test_get_markets(self):
-        transport = Transport(self.api_key)
-        self.result = transport.get_markets('en-GB')
-
-        self.assertTrue('Countries' in self.result)
-        self.assertTrue(len(self.result['Countries']) > 0)
-
-    def test_location_autosuggest(self):
-        transport = Transport(self.api_key)
-        self.result = transport.location_autosuggest('KUL', 'UK', 'GBP', 'en-GB')
-
-        self.assertTrue('Places' in self.result)
-        self.assertTrue(len(self.result['Places']) > 0)
 
     # def test_poll_session(self):
     #     flights_service = Flights(self.api_key)
@@ -401,6 +411,7 @@ class TestFlights(SkyScannerTestCase):
     def test_get_result(self):
         flights_service = Flights(self.api_key)
         self.result = flights_service.get_result(
+            errors=GRACEFUL,
             country='UK',
             currency='GBP',
             locale='en-GB',
@@ -410,9 +421,8 @@ class TestFlights(SkyScannerTestCase):
             inbounddate=self.inbound_days,
             adults=1)
 
-        # print(result)
-        print("status: %s" % self.result['Status'])
-        # self.assertTrue(len(result['Flights']['Itineraries']) > 0)
+        self.assertTrue('Itineraries' in self.result)
+        self.assertTrue(len(self.result['Itineraries']) > 0)
 
 
 if __name__ == '__main__':

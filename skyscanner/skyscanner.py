@@ -33,6 +33,11 @@ class EmptyResponse(Exception):
     pass
 
 
+class MissingParameter(KeyError):
+    """Is thrown when expected request parameter is missing."""
+    pass
+
+
 class Transport(object):
 
     """
@@ -40,18 +45,19 @@ class Transport(object):
     """
     API_HOST = 'http://partners.api.skyscanner.net'
     MARKET_SERVICE_URL = '{api_host}/apiservices/reference/v1.0/countries'.format(api_host=API_HOST)
-    LOCATION_AUTOSUGGEST_SERVICE_URL = '{api_host}/apiservices/autosuggest/v1.0'.format(api_host=API_HOST)
+    LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/autosuggest/v1.0'.format(api_host=API_HOST)
+    LOCATION_AUTOSUGGEST_PARAMS = ('market', 'currency', 'locale')
 
     def __init__(self, api_key):
         if not api_key:
             raise ValueError('API key must be specified.')
         self.api_key = api_key
 
-    def get_result(self, **params):
+    def get_result(self, errors=STRICT, **params):
         """
         Get all results, no filtering, etc. by creating and polling the session.
         """
-        return self.poll_session(self.create_session(**params))
+        return self.poll_session(self.create_session(**params), errors=errors)
 
     def make_request(self, service_url, method='get', headers=None, data=None,
                      callback=None, errors=STRICT, **params):
@@ -88,6 +94,9 @@ class Transport(object):
             })
 
         request = getattr(requests, method.lower())
+        log.debug('* Request URL: %s' % service_url)
+        log.debug('* Request method: %s' % method)
+        log.debug('* Request query params: %s' % params)
         r = request(service_url, headers=headers, data=data, params=params)
 
         try:
@@ -106,17 +115,20 @@ class Transport(object):
 
         return self.make_request(url)
 
-    def location_autosuggest(self, query, market, currency, locale):
+    def location_autosuggest(self, **params):
         """
-        Location Autosuggest Service
-        Doc URL: http://business.skyscanner.net/portal/en-GB/Documentation/Autosuggest
-        Format: {API_HOST}/apiservices/autosuggest/v1.0/{market}/{currency}/{locale}/?query={query}&apiKey={apiKey}
+        Location Autosuggest Services
+        Doc URLs: http://business.skyscanner.net/portal/en-GB/Documentation/Autosuggest
+                  http://business.skyscanner.net/portal/en-GB/Documentation/CarHireAutoSuggest
+                  http://business.skyscanner.net/portal/en-GB/Documentation/HotelsAutoSuggest
+        Format: Generic -        {LOCATION_AUTOSUGGEST_URL}/{market}/{currency}/{locale}/?query={query}&apiKey={apiKey}
+                CarHire/Hotels - {LOCATION_AUTOSUGGEST_URL}/{market}/{currency}/{locale}/{query}?apiKey={apiKey}
         """
-
-        url = "{url}/{market}/{currency}/{locale}/".format(url=self.LOCATION_AUTOSUGGEST_SERVICE_URL,
-                                                           market=market, currency=currency, locale=locale)
-
-        return self.make_request(url, query=query)
+        service_url = "{url}/{params_path}".format(
+            url=self.LOCATION_AUTOSUGGEST_URL,
+            params_path=self._construct_params(params, self.LOCATION_AUTOSUGGEST_PARAMS)
+        )
+        return self.make_request(service_url, **params)
 
     def create_session(self, **params):
         """Creates a session for polling. Should be implemented by sub-classes"""
@@ -229,6 +241,19 @@ class Transport(object):
 
         return resp_json
 
+    @staticmethod
+    def _construct_params(params, required_keys, opt_keys=None):
+        """
+        Construct params list in order of given keys.
+        """
+        try:
+            params_list = [params.pop(key) for key in required_keys]
+        except KeyError as e:
+            raise MissingParameter('Missing expected request parameter: %s' % e.message)
+        if opt_keys:
+            params_list.extend([params.pop(key) for key in opt_keys if key in params])
+        return '/'.join(str(p) for p in params_list)
+
 
 class Flights(Transport):
 
@@ -276,20 +301,8 @@ class FlightsCache(Flights):
     BROWSE_ROUTES_SERVICE_URL = '{api_host}/apiservices/browseroutes/v1.0'.format(api_host=Transport.API_HOST)
     BROWSE_DATES_SERVICE_URL = '{api_host}/apiservices/browsedates/v1.0'.format(api_host=Transport.API_HOST)
     BROWSE_GRID_SERVICE_URL = '{api_host}/apiservices/browsegrid/v1.0'.format(api_host=Transport.API_HOST)
-
-    def construct_params(self, params):
-        """
-        Construct params list in order
-        """
-        params_list = [params['country'], params['currency'], params['locale'], params[
-            'originplace'], params['destinationplace'], params['outbounddate']]
-
-        if params.get('inbounddate', None):
-            params_list.append(params.get('inbounddate', None))
-
-        params_path = '/'.join(params_list)
-
-        return params_path
+    _REQ_PARAMS = ('market', 'currency', 'locale', 'originplace', 'destinationplace', 'outbounddate')
+    _OPT_PARAMS = ('inbounddate',)
 
     def get_cheapest_price_by_date(self, **params):
         """
@@ -297,10 +310,10 @@ class FlightsCache(Flights):
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_DATES_SERVICE_URL,
-            params_path=self.construct_params(params)
+            params_path=self._construct_params(params, self._REQ_PARAMS, self._OPT_PARAMS)
         )
 
-        return self.make_request(service_url, **params)
+        return self.make_request(service_url, headers=self._headers(), **params)
 
     def get_cheapest_price_by_route(self, **params):
         """
@@ -308,10 +321,10 @@ class FlightsCache(Flights):
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_ROUTES_SERVICE_URL,
-            params_path=self.construct_params(params)
+            params_path=self._construct_params(params, self._REQ_PARAMS, self._OPT_PARAMS)
 
         )
-        return self.make_request(service_url, **params)
+        return self.make_request(service_url, headers=self._headers(), **params)
 
     def get_cheapest_quotes(self, **params):
         """
@@ -319,9 +332,9 @@ class FlightsCache(Flights):
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_QUOTES_SERVICE_URL,
-            params_path=self.construct_params(params)
+            params_path=self._construct_params(params, self._REQ_PARAMS, self._OPT_PARAMS)
         )
-        return self.make_request(service_url, **params)
+        return self.make_request(service_url, headers=self._headers(), **params)
 
     def get_grid_prices_by_date(self, **params):
         """
@@ -329,9 +342,13 @@ class FlightsCache(Flights):
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_GRID_SERVICE_URL,
-            params_path=self.construct_params(params)
+            params_path=self._construct_params(params, self._REQ_PARAMS, self._OPT_PARAMS)
         )
-        return self.make_request(service_url, **params)
+        return self.make_request(service_url, headers=self._headers(), **params)
+
+    @staticmethod
+    def _headers():
+        return {'Accept': 'application/json'}
 
 
 class CarHire(Transport):
@@ -343,33 +360,10 @@ class CarHire(Transport):
 
     PRICING_SESSION_URL = '{api_host}/apiservices/carhire/liveprices/v2'.format(api_host=Transport.API_HOST)
     LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/hotels/autosuggest/v2'.format(api_host=Transport.API_HOST)
+    LOCATION_AUTOSUGGEST_PARAMS = ('market', 'currency', 'locale', 'query')
 
     def __init__(self, api_key):
         Transport.__init__(self, api_key)
-
-    def location_autosuggest(self, **params):
-        """
-        http://partners.api.skyscanner.net/apiservices/hotels/autosuggest/v2/{market}/{currency}/{locale}/{query}?apikey={apikey}
-        """
-        service_url = "{url}/{market}/{currency}/{locale}/{query}".format(
-            url=self.LOCATION_AUTOSUGGEST_URL,
-            market=params['market'],
-            currency=params['currency'],
-            locale=params['locale'],
-            query=params['query']
-        )
-        return self.make_request(service_url, **params)
-
-    def construct_params(self, params):
-        """
-        Construct params list in order
-        """
-        params_list = [params['market'], params['currency'], params['locale'], params['pickupplace'], params[
-            'dropoffplace'], params['pickupdatetime'], params['dropoffdatetime'], params['driverage']]
-
-        params_path = '/'.join(str(p) for p in params_list)
-
-        return params_path
 
     def create_session(self, **params):
         """
@@ -380,7 +374,10 @@ class CarHire(Transport):
 
         service_url = "{url}/{params_path}".format(
             url=self.PRICING_SESSION_URL,
-            params_path=self.construct_params(params)
+            params_path=self._construct_params(params, ('market', 'currency', 'locale',
+                                                        'pickupplace', 'dropoffplace',
+                                                        'pickupdatetime', 'dropoffdatetime',
+                                                        'driverage'))
         )
 
         poll_path = self.make_request(service_url,
@@ -406,33 +403,10 @@ class Hotels(Transport):
 
     PRICING_SESSION_URL = '{api_host}/apiservices/hotels/liveprices/v2'.format(api_host=Transport.API_HOST)
     LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/hotels/autosuggest/v2'.format(api_host=Transport.API_HOST)
+    LOCATION_AUTOSUGGEST_PARAMS = ('market', 'currency', 'locale', 'query')
 
     def __init__(self, api_key):
         Transport.__init__(self, api_key)
-
-    def location_autosuggest(self, **params):
-        """
-        {API_HOST}/apiservices/hotels/autosuggest/v2/{market}/{currency}/{locale}/{query}?apikey={apikey}
-        """
-        service_url = "{url}/{market}/{currency}/{locale}/{query}".format(
-            url=self.LOCATION_AUTOSUGGEST_URL,
-            market=params['market'],
-            currency=params['currency'],
-            locale=params['locale'],
-            query=params['query']
-        )
-        return self.make_request(service_url, **params)
-
-    def construct_params(self, params):
-        """
-        Construct params list in order
-        """
-        params_list = [params['market'], params['currency'], params['locale'], params['entityid'], params[
-            'checkindate'], params['checkoutdate'], params['guests'], params['rooms']]
-
-        params_path = '/'.join(str(p) for p in params_list)
-
-        return params_path
 
     def create_session(self, **params):
         """
@@ -443,7 +417,9 @@ class Hotels(Transport):
 
         service_url = "{url}/{params_path}".format(
             url=self.PRICING_SESSION_URL,
-            params_path=self.construct_params(params)
+            params_path=self._construct_params(params, ('market', 'currency', 'locale',
+                                                        'entityid', 'checkindate', 'checkoutdate',
+                                                        'guests', 'rooms'))
         )
 
         poll_path = self.make_request(service_url,
