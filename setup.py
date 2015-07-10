@@ -18,7 +18,9 @@ requirements = [
     # TODO: put package requirements here
     'requests'
 ]
-
+extras_requirements = {
+    'Faster XML processing':  ["lxml"]
+}
 test_requirements = [
     # TODO: put package test requirements here
     'requests'
@@ -39,6 +41,7 @@ setup(
                  'skyscanner'},
     include_package_data=True,
     install_requires=requirements,
+    extras_require=extras_requirements,
     license="BSD",
     zip_safe=False,
     keywords='skyscanner',
