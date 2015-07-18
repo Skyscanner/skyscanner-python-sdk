@@ -28,7 +28,7 @@ test_requirements = [
 
 setup(
     name='skyscanner',
-    version='1.0',
+    version='1.1.0',
     description="Skyscanner Python SDK",
     long_description=readme + '\n\n' + history,
     author="Ardy Dedase",
@@ -42,13 +42,13 @@ setup(
     include_package_data=True,
     install_requires=requirements,
     extras_require=extras_requirements,
-    license="BSD",
+    license="Apache",
     zip_safe=False,
-    keywords='skyscanner',
+    keywords='skyscanner travel api business sdk flights hotels',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.6',
