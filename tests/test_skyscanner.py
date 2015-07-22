@@ -24,8 +24,7 @@ class SkyScannerTestCase(unittest.TestCase):
     def setUp(self):
         # API Key that's meant for testing only
         # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
-        # self.api_key = 'py495888586774232134437415165965'
-        self.api_key = 'ad348902349238472384234920940923'
+        self.api_key = 'prtl6749387986743898559646983194'
 
         self.result = None
 
