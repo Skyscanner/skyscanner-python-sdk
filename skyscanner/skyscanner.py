@@ -13,7 +13,8 @@ def configure_logger(log_level=logging.WARN):
     logger = logging.getLogger(__name__)
     logger.setLevel(log_level)
     sa = logging.StreamHandler(stream=sys.stdout)
-    formatter = logging.Formatter('%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s')
     sa.setFormatter(formatter)
     logger.addHandler(sa)
     return logger
@@ -23,27 +24,33 @@ STRICT, GRACEFUL, IGNORE = 'strict', 'graceful', 'ignore'
 
 
 class ExceededRetries(Exception):
+
     """Is thrown when allowed number of polls were performed but response is not complete yet."""
     pass
 
 
 class EmptyResponse(Exception):
+
     """Is thrown when API returns empty response."""
     pass
 
 
 class MissingParameter(KeyError):
+
     """Is thrown when expected request parameter is missing."""
     pass
 
 
 class Transport(object):
+
     """
     Parent class for initialization
     """
     API_HOST = 'http://partners.api.skyscanner.net'
-    MARKET_SERVICE_URL = '{api_host}/apiservices/reference/v1.0/countries'.format(api_host=API_HOST)
-    LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/autosuggest/v1.0'.format(api_host=API_HOST)
+    MARKET_SERVICE_URL = '{api_host}/apiservices/reference/v1.0/countries'.format(
+        api_host=API_HOST)
+    LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/autosuggest/v1.0'.format(
+        api_host=API_HOST)
     LOCATION_AUTOSUGGEST_PARAMS = ('market', 'currency', 'locale')
     _SUPPORTED_FORMATS = ('json', 'xml')
 
@@ -90,7 +97,8 @@ class Transport(object):
         error_modes = (STRICT, GRACEFUL, IGNORE)
         error_mode = errors or GRACEFUL
         if error_mode.lower() not in error_modes:
-            raise ValueError('Possible values for errors argument are: %s' % ', '.join(error_modes))
+            raise ValueError(
+                'Possible values for errors argument are: %s' % ', '.join(error_modes))
 
         if callback is None:
             callback = self._default_resp_callback
@@ -133,7 +141,8 @@ class Transport(object):
         """
         service_url = "{url}/{params_path}".format(
             url=self.LOCATION_AUTOSUGGEST_URL,
-            params_path=self._construct_params(params, self.LOCATION_AUTOSUGGEST_PARAMS)
+            params_path=self._construct_params(
+                params, self.LOCATION_AUTOSUGGEST_PARAMS)
         )
         return self.make_request(service_url, headers=self._headers(), **params)
 
@@ -141,7 +150,7 @@ class Transport(object):
         """Creates a session for polling. Should be implemented by sub-classes"""
         raise NotImplementedError('Should be implemented by a sub-class.')
 
-    def poll_session(self, poll_url, initial_delay=2, delay=1, tries=10, errors=STRICT, **params):
+    def poll_session(self, poll_url, initial_delay=2, delay=1, tries=20, errors=STRICT, **params):
         """
         Poll the URL
         :param poll_url - URL to poll, should be returned by 'create_session' call
@@ -163,7 +172,8 @@ class Transport(object):
                 time.sleep(delay)
 
         if STRICT == errors:
-            raise ExceededRetries("Failed to poll within {0} tries.".format(tries))
+            raise ExceededRetries(
+                "Failed to poll within {0} tries.".format(tries))
         else:
             return poll_response
 
@@ -179,7 +189,8 @@ class Transport(object):
         if self.response_format == 'xml':
             status = poll_resp.parsed.find('./Status').text
         elif self.response_format == 'json':
-            status = poll_resp.parsed.get('Status', poll_resp.parsed.get('status'))
+            status = poll_resp.parsed.get(
+                'Status', poll_resp.parsed.get('status'))
         if status is None:
             raise RuntimeError('Unable to get poll response status.')
         return status in success_list
@@ -208,11 +219,12 @@ class Transport(object):
                         messages = [e.find('./Message').text
                                     for e in parsed_resp.findall('./ValidationErrors/ValidationErrorDto')]
                     elif response_format == 'json' and 'ValidationErrors' in parsed_resp:
-                        messages = [e['Message'] for e in parsed_resp['ValidationErrors']]
+                        messages = [e['Message']
+                                    for e in parsed_resp['ValidationErrors']]
                     error = requests.HTTPError(
-                        '%s: %s' % (error.message, '\n\t'.join(messages)), response=resp)
+                        '%s: %s' % (error, '\n\t'.join(messages)), response=resp)
             elif resp.status_code == 429:
-                error = requests.HTTPError('%sToo many requests in the last minute.' % error.message,
+                error = requests.HTTPError('%sToo many requests in the last minute.' % error,
                                            response=resp)
 
         if STRICT == mode:
@@ -236,7 +248,8 @@ class Transport(object):
             else:
                 raise error
         else:
-            # ignore everything, just log it and return whatever response we have
+            # ignore everything, just log it and return whatever response we
+            # have
             log.error(error)
             return safe_parse(resp)
 
@@ -268,14 +281,17 @@ class Transport(object):
         try:
             params_list = [params.pop(key) for key in required_keys]
         except KeyError as e:
-            raise MissingParameter('Missing expected request parameter: %s' % e.message)
+            raise MissingParameter(
+                'Missing expected request parameter: %s' % e)
         if opt_keys:
-            params_list.extend([params.pop(key) for key in opt_keys if key in params])
+            params_list.extend([params.pop(key)
+                                for key in opt_keys if key in params])
         return '/'.join(str(p) for p in params_list)
 
     @staticmethod
     def _parse_resp(resp, response_format):
-        resp.parsed = etree.fromstring(resp.content) if response_format == 'xml' else resp.json()
+        resp.parsed = etree.fromstring(
+            resp.content) if response_format == 'xml' else resp.json()
         return resp
 
 
@@ -286,7 +302,8 @@ class Flights(Transport):
     http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingList
     """
 
-    PRICING_SESSION_URL = '{api_host}/apiservices/pricing/v1.0'.format(api_host=Transport.API_HOST)
+    PRICING_SESSION_URL = '{api_host}/apiservices/pricing/v1.0'.format(
+        api_host=Transport.API_HOST)
 
     def create_session(self, **params):
         """
@@ -297,7 +314,8 @@ class Flights(Transport):
         return self.make_request(self.PRICING_SESSION_URL,
                                  method='post',
                                  headers=self._session_headers(),
-                                 callback=lambda resp: resp.headers['location'],
+                                 callback=lambda resp: resp.headers[
+                                     'location'],
                                  data=params)
 
     def request_booking_details(self, poll_url, **params):
@@ -308,7 +326,8 @@ class Flights(Transport):
         return self.make_request("%s/booking" % poll_url,
                                  method='put',
                                  headers=self._headers(),
-                                 callback=lambda resp: resp.headers['location'],
+                                 callback=lambda resp: resp.headers[
+                                     'location'],
                                  **params)
 
 
@@ -319,11 +338,16 @@ class FlightsCache(Flights):
     http://business.skyscanner.net/portal/en-GB/Documentation/FlightsBrowseCacheOverview
     """
 
-    BROWSE_QUOTES_SERVICE_URL = '{api_host}/apiservices/browsequotes/v1.0'.format(api_host=Transport.API_HOST)
-    BROWSE_ROUTES_SERVICE_URL = '{api_host}/apiservices/browseroutes/v1.0'.format(api_host=Transport.API_HOST)
-    BROWSE_DATES_SERVICE_URL = '{api_host}/apiservices/browsedates/v1.0'.format(api_host=Transport.API_HOST)
-    BROWSE_GRID_SERVICE_URL = '{api_host}/apiservices/browsegrid/v1.0'.format(api_host=Transport.API_HOST)
-    _REQ_PARAMS = ('market', 'currency', 'locale', 'originplace', 'destinationplace', 'outbounddate')
+    BROWSE_QUOTES_SERVICE_URL = '{api_host}/apiservices/browsequotes/v1.0'.format(
+        api_host=Transport.API_HOST)
+    BROWSE_ROUTES_SERVICE_URL = '{api_host}/apiservices/browseroutes/v1.0'.format(
+        api_host=Transport.API_HOST)
+    BROWSE_DATES_SERVICE_URL = '{api_host}/apiservices/browsedates/v1.0'.format(
+        api_host=Transport.API_HOST)
+    BROWSE_GRID_SERVICE_URL = '{api_host}/apiservices/browsegrid/v1.0'.format(
+        api_host=Transport.API_HOST)
+    _REQ_PARAMS = ('market', 'currency', 'locale',
+                   'originplace', 'destinationplace', 'outbounddate')
     _OPT_PARAMS = ('inbounddate',)
 
     def get_cheapest_price_by_date(self, **params):
@@ -332,7 +356,8 @@ class FlightsCache(Flights):
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_DATES_SERVICE_URL,
-            params_path=self._construct_params(params, self._REQ_PARAMS, self._OPT_PARAMS)
+            params_path=self._construct_params(
+                params, self._REQ_PARAMS, self._OPT_PARAMS)
         )
 
         return self.make_request(service_url, headers=self._headers(), **params)
@@ -343,7 +368,8 @@ class FlightsCache(Flights):
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_ROUTES_SERVICE_URL,
-            params_path=self._construct_params(params, self._REQ_PARAMS, self._OPT_PARAMS)
+            params_path=self._construct_params(
+                params, self._REQ_PARAMS, self._OPT_PARAMS)
 
         )
         return self.make_request(service_url, headers=self._headers(), **params)
@@ -354,7 +380,8 @@ class FlightsCache(Flights):
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_QUOTES_SERVICE_URL,
-            params_path=self._construct_params(params, self._REQ_PARAMS, self._OPT_PARAMS)
+            params_path=self._construct_params(
+                params, self._REQ_PARAMS, self._OPT_PARAMS)
         )
         return self.make_request(service_url, headers=self._headers(), **params)
 
@@ -364,7 +391,8 @@ class FlightsCache(Flights):
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_GRID_SERVICE_URL,
-            params_path=self._construct_params(params, self._REQ_PARAMS, self._OPT_PARAMS)
+            params_path=self._construct_params(
+                params, self._REQ_PARAMS, self._OPT_PARAMS)
         )
         return self.make_request(service_url, headers=self._headers(), **params)
 
@@ -376,8 +404,10 @@ class CarHire(Transport):
     {API_HOST}/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip}
     """
 
-    PRICING_SESSION_URL = '{api_host}/apiservices/carhire/liveprices/v2'.format(api_host=Transport.API_HOST)
-    LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/hotels/autosuggest/v2'.format(api_host=Transport.API_HOST)
+    PRICING_SESSION_URL = '{api_host}/apiservices/carhire/liveprices/v2'.format(
+        api_host=Transport.API_HOST)
+    LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/hotels/autosuggest/v2'.format(
+        api_host=Transport.API_HOST)
     LOCATION_AUTOSUGGEST_PARAMS = ('market', 'currency', 'locale', 'query')
 
     def create_session(self, **params):
@@ -397,7 +427,8 @@ class CarHire(Transport):
 
         poll_path = self.make_request(service_url,
                                       headers=self._session_headers(),
-                                      callback=lambda resp: resp.headers['location'],
+                                      callback=lambda resp: resp.headers[
+                                          'location'],
                                       userip=params['userip'])
 
         return "{url}{path}".format(url=self.API_HOST, path=poll_path)
@@ -423,8 +454,10 @@ class Hotels(Transport):
     {API_HOST}/apiservices/hotels/liveprices/v2/{market}/{currency}/{locale}/{entityid}/{checkindate}/{checkoutdate}/{guests}/{rooms}?apiKey={apiKey}[&pageSize={pageSize}][&imageLimit={imageLimit}]
     """
 
-    PRICING_SESSION_URL = '{api_host}/apiservices/hotels/liveprices/v2'.format(api_host=Transport.API_HOST)
-    LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/hotels/autosuggest/v2'.format(api_host=Transport.API_HOST)
+    PRICING_SESSION_URL = '{api_host}/apiservices/hotels/liveprices/v2'.format(
+        api_host=Transport.API_HOST)
+    LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/hotels/autosuggest/v2'.format(
+        api_host=Transport.API_HOST)
     LOCATION_AUTOSUGGEST_PARAMS = ('market', 'currency', 'locale', 'query')
 
     def create_session(self, **params):
