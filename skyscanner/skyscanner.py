@@ -12,7 +12,10 @@ except ImportError:
 def configure_logger(log_level=logging.WARN):
     logger = logging.getLogger(__name__)
     logger.setLevel(log_level)
-    sa = logging.StreamHandler(stream=sys.stdout)
+    try:
+        sa = logging.StreamHandler(stream=sys.stdout)
+    except TypeError:
+        sa = logging.StreamHandler()
     formatter = logging.Formatter(
         '%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s')
     sa.setFormatter(formatter)
