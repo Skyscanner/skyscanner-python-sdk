@@ -31,4 +31,4 @@ nosetests.xml
 *.mo
 
 # Mr Developer
-venv
+venv*
