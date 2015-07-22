@@ -24,7 +24,9 @@ class SkyScannerTestCase(unittest.TestCase):
     def setUp(self):
         # API Key that's meant for testing only
         # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
-        self.api_key = 'prtl6749387986743898559646983194'
+        # self.api_key = 'py495888586774232134437415165965'
+        self.api_key = 'ad348902349238472384234920940923'
+
         self.result = None
 
     def tearDown(self):
@@ -243,7 +245,7 @@ class TestCarHire(SkyScannerTestCase):
     def setUp(self):
         super(TestCarHire, self).setUp()
         datetime_format = '%Y-%m-%dT%H:%S'
-        pickup_datetime = datetime.now()
+        pickup_datetime = datetime.now()+ timedelta(days=10)
         dropoff_datetime = pickup_datetime + timedelta(days=3)
         self.pickup = pickup_datetime.strftime(datetime_format)
         self.dropoff = dropoff_datetime.strftime(datetime_format)
@@ -293,26 +295,26 @@ class TestCarHire(SkyScannerTestCase):
         self.assertTrue('cars' in self.result)
         self.assertTrue('websites' in self.result)
 
-    def test_get_result_xml(self):
-        """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip}
-        YYYY-MM-DDThh:mm
-        """
-        carhire_service = CarHire(self.api_key, response_format='xml')
+    # def test_get_result_xml(self):
+    #     """
+    #     http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip}
+    #     YYYY-MM-DDThh:mm
+    #     """
+    #     carhire_service = CarHire(self.api_key, response_format='xml')
 
-        self.result = carhire_service.get_result(
-            market='DE',
-            currency='EUR',
-            locale='de-DE',
-            pickupplace='TXL-sky',
-            dropoffplace='TXL-sky',
-            pickupdatetime=self.pickup,
-            dropoffdatetime=self.dropoff,
-            driverage='30',
-            userip='175.156.244.174').parsed
+    #     self.result = carhire_service.get_result(
+    #         market='UK',
+    #         currency='GBP',
+    #         locale='en-GB',
+    #         pickupplace='LHR-sky',
+    #         dropoffplace='LHR-sky',
+    #         pickupdatetime=self.pickup,
+    #         dropoffdatetime=self.dropoff,
+    #         driverage='30',
+    #         userip='175.156.244.174').parsed
 
-        self.assertIsNotNone(self.result.find('./Cars'))
-        self.assertIsNotNone(self.result.find('./Websites'))
+    #     self.assertIsNotNone(self.result.find('./Cars'))
+    #     self.assertIsNotNone(self.result.find('./Websites'))
 
     def test_create_session(self):
         """
@@ -434,7 +436,7 @@ class TestFlights(SkyScannerTestCase):
     def setUp(self):
         super(TestFlights, self).setUp()
         datetime_format = '%Y-%m'
-        outbound_datetime = datetime.now()
+        outbound_datetime = datetime.now() + timedelta(days=7)
         inbound_datetime = outbound_datetime + timedelta(days=31)
         self.outbound = outbound_datetime.strftime(datetime_format)
         self.inbound = inbound_datetime.strftime(datetime_format)
