@@ -28,7 +28,7 @@ test_requirements = [
 
 setup(
     name='skyscanner',
-    version='1.1.0',
+    version='1.1.1',
     description="Skyscanner Python SDK",
     long_description=readme + '\n\n' + history,
     author="Ardy Dedase",
