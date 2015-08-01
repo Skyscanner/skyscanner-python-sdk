@@ -18,7 +18,7 @@ Skyscanner Python SDK for Skyscanner's API
 Features
 --------
 
-* Tested on Python 2.7
+* Tested on Python 2.6, 2.7, 3.3, 3.4
 * Supports Flights, Hotels, and Carhire
 
 
@@ -38,4 +38,13 @@ Or, if you have virtualenvwrapper installed::
 Usage
 -----
 
-https://skyscanner.readthedocs.org/en/latest/usage.html    
+https://skyscanner.readthedocs.org/en/latest/usage.html  
+
+Known Issues
+------------
+
+* Tests might appear to be broken sometimes, this is due to the throttling in the API. In such cases, you will see the following error in the build log:
+
+	```
+	requests.exceptions.HTTPError: 429 Client Error: Too many requests in the last minute.
+	```
