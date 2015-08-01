@@ -45,6 +45,5 @@ Known Issues
 
 * Tests might appear to be broken sometimes, this is due to the throttling in the API. In such cases, you will see the following error in the build log:
 
-	```python 
-	requests.exceptions.HTTPError: 429 Client Error: Too many requests in the last minute.
-	```
+        requests.exceptions.HTTPError: 429 Client Error: Too many requests in the last minute.
+    
