@@ -22,9 +22,8 @@ class SkyScannerTestCase(unittest.TestCase):
     """Generic TestCase class to support default failure messages."""
 
     def setUp(self):
-        # API Key that's meant for testing only
-        # Taken from: http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingQuickStart
-        self.api_key = 'prtl6749387986743898559646983194'
+        # API Key that's meant for unit tests only
+        self.api_key = 'py495888586774232134437415165965'
 
         self.result = None
 
