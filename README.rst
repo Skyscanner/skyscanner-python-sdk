@@ -16,6 +16,10 @@ Skyscanner Python SDK
         :target: https://pypi.python.org/pypi/skyscanner
         :alt: Number of PyPI downloads
 
+.. image:: https://coveralls.io/repos/Skyscanner/skyscanner-python-sdk/badge.svg?branch=master&service=github
+        :target: https://coveralls.io/github/Skyscanner/skyscanner-python-sdk?branch=master
+
+
 Skyscanner Python SDK for Skyscanner's API
 
 * Free software: BSD license
