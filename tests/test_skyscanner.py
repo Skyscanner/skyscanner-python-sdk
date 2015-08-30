@@ -134,7 +134,7 @@ class TestTransport(SkyScannerTestCase):
                                            HTTPError('400'), STRICT, 'json')
         except HTTPError as e:
             try:
-                self.assertEqual(e.message, HTTPError(('400: %s' % '\n\t'.join(['1', '2']))))
+                self.assertEqual(e.message, ('400: %s' % '\n\t'.join(['1', '2'])))
             except AttributeError as e:
                 # Exception for Python 3
                 print(e)
