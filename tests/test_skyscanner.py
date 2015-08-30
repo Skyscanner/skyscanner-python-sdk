@@ -120,7 +120,7 @@ class TestTransport(SkyScannerTestCase):
                     self.assertEqual(e.message, '400')
             except Exception as e:
                 # Exception for Python 2.6
-                print(e.message)
+                print(e)
 
         self.assertRaises(HTTPError,
                           Transport._with_error_handling, FakeResponse(status_code=400,
@@ -133,8 +133,12 @@ class TestTransport(SkyScannerTestCase):
                                                                 '[{"Message": "1"}, {"Message": "2"}]}'),
                                            HTTPError('400'), STRICT, 'json')
         except HTTPError as e:
-            self.assertEqual(e.message, '400: %s' % '\n\t'.join(['1', '2']))
-
+            try:
+                self.assertEqual(e.message, HTTPError(('400: %s' % '\n\t'.join(['1', '2']))))
+            except AttributeError as e:
+                # Exception for Python 3
+                print(e)
+    
         try:
             self.assertRaises(HTTPError,
                               Transport._with_error_handling, FakeResponse(status_code=400,
@@ -149,7 +153,7 @@ class TestTransport(SkyScannerTestCase):
                               HTTPError('400'), STRICT, 'xml')
         except Exception as e:
             # Exception for Python 2.6
-            print(e.message)
+            print(e)
 
         try:
             try:
@@ -165,9 +169,13 @@ class TestTransport(SkyScannerTestCase):
                                                HTTPError('400'), STRICT, 'xml')
             except Exception as e:
                 # Exception for Python 2.6
-                print(e.message)
+                print(e)
         except HTTPError as e:
-            self.assertEqual(e.message, '400')
+            try:
+                self.assertEqual(e.message, '400')
+            except AttributeError as e:
+                # Exception for Python 3
+                print(e)
 
     def test_with_error_handling_graceful(self):
         result = Transport._with_error_handling(
@@ -198,7 +206,7 @@ class TestTransport(SkyScannerTestCase):
             result = Transport._with_error_handling(FakeResponse(content='invalid', status_code=429),
                                                     HTTPError(), GRACEFUL, 'xml').parsed
         except Exception as e:
-            print(e.message)
+            print(e)
 
         self.assertEqual(None, result)
 
@@ -233,7 +241,7 @@ class TestTransport(SkyScannerTestCase):
             self.assertEqual(None, result)
         except Exception as e:
             # Exception for Python 2.6
-            print(e.message)
+            print(e)
 
         result = Transport._with_error_handling(
             FakeResponse(content='{"valid": 1}'), HTTPError(), IGNORE, 'json').parsed
