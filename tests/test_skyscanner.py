@@ -122,11 +122,11 @@ class TestTransport(SkyScannerTestCase):
                 # Exception for Python 2.6
                 print(e.message)
 
-        self.assertRaises(HTTPError, 
-            Transport._with_error_handling, FakeResponse(status_code=400,
-                                                        content='{"ValidationErrors": '
-                                                                '[{"Message": "1"}, {"Message": "2"}]}'),
-                                           HTTPError('400'), STRICT, 'json')
+        self.assertRaises(HTTPError,
+                          Transport._with_error_handling, FakeResponse(status_code=400,
+                                                                       content='{"ValidationErrors": '
+                                                                       '[{"Message": "1"}, {"Message": "2"}]}'),
+                          HTTPError('400'), STRICT, 'json')
         try:
             Transport._with_error_handling(FakeResponse(status_code=400,
                                                         content='{"ValidationErrors": '
@@ -137,16 +137,16 @@ class TestTransport(SkyScannerTestCase):
 
         try:
             self.assertRaises(HTTPError,
-                Transport._with_error_handling, FakeResponse(status_code=400,
-                                                            content='<Root><ValidationErrors>'
-                                                                    '<ValidationErrorDto>'
-                                                                    '<Message>1</Message'
-                                                                    '</ValidationErrorDto>'
-                                                                    '<ValidationErrorDto>'
-                                                                    '<Message>2</Message'
-                                                                    '</ValidationErrorDto>'
-                                                                    '</ValidationErrors></Root>'),
-                                               HTTPError('400'), STRICT, 'xml')
+                              Transport._with_error_handling, FakeResponse(status_code=400,
+                                                                           content='<Root><ValidationErrors>'
+                                                                           '<ValidationErrorDto>'
+                                                                           '<Message>1</Message'
+                                                                           '</ValidationErrorDto>'
+                                                                           '<ValidationErrorDto>'
+                                                                           '<Message>2</Message'
+                                                                           '</ValidationErrorDto>'
+                                                                           '</ValidationErrors></Root>'),
+                              HTTPError('400'), STRICT, 'xml')
         except Exception as e:
             # Exception for Python 2.6
             print(e.message)
@@ -196,7 +196,7 @@ class TestTransport(SkyScannerTestCase):
 
         try:
             result = Transport._with_error_handling(FakeResponse(content='invalid', status_code=429),
-                                                HTTPError(), GRACEFUL, 'xml').parsed
+                                                    HTTPError(), GRACEFUL, 'xml').parsed
         except Exception as e:
             print(e.message)
 
@@ -204,11 +204,11 @@ class TestTransport(SkyScannerTestCase):
 
         for format in ['json', 'xml']:
             self.assertRaises(HTTPError,
-                Transport._with_error_handling, 
-                FakeResponse(), HTTPError(), GRACEFUL, format)
+                              Transport._with_error_handling,
+                              FakeResponse(), HTTPError(), GRACEFUL, format)
             self.assertRaises(RuntimeError,
-                 Transport._with_error_handling,
-                FakeResponse(), RuntimeError(), GRACEFUL, format)
+                              Transport._with_error_handling,
+                              FakeResponse(), RuntimeError(), GRACEFUL, format)
 
     def test_with_error_handling_ignore(self):
         result = Transport._with_error_handling(
@@ -249,12 +249,12 @@ class TestTransport(SkyScannerTestCase):
     def test_default_resp_callback_json(self):
         t = Transport(self.api_key, response_format='json')
         self.assertRaises(EmptyResponse,
-            t._default_resp_callback, None)
+                          t._default_resp_callback, None)
         self.assertRaises(EmptyResponse,
-            t._default_resp_callback, FakeResponse(content=''))
+                          t._default_resp_callback, FakeResponse(content=''))
 
         self.assertRaises(ValueError,
-            t._default_resp_callback, FakeResponse(content='invalid json'))
+                          t._default_resp_callback, FakeResponse(content='invalid json'))
 
         resp_json = t._default_resp_callback(
             FakeResponse(content='{"valid": 1}')).parsed
@@ -265,16 +265,16 @@ class TestTransport(SkyScannerTestCase):
     def test_default_resp_callback_xml(self):
         t = Transport(self.api_key, response_format='xml')
         self.assertRaises(EmptyResponse,
-            t._default_resp_callback, None)
+                          t._default_resp_callback, None)
         self.assertRaises(EmptyResponse,
-            t._default_resp_callback, FakeResponse(content=''))
+                          t._default_resp_callback, FakeResponse(content=''))
 
         try:
             self.assertRaises(ValueError,
-                t._default_resp_callback, FakeResponse(content='invalid XML'))
+                              t._default_resp_callback, FakeResponse(content='invalid XML'))
         except:
             self.assertRaises(Exception,
-                t._default_resp_callback, FakeResponse(content='invalid XML'))
+                              t._default_resp_callback, FakeResponse(content='invalid XML'))
 
         resp_xml = t._default_resp_callback(
             FakeResponse(content='<valid a="test">1</valid>')).parsed
@@ -295,8 +295,8 @@ class TestTransport(SkyScannerTestCase):
             '1/2/3', Transport._construct_params(params, ('a', 'b'), ('c',)))
 
         params = dict(a=1, c=3)
-        self.assertRaises(MissingParameter, 
-            Transport._construct_params, params, ('a', 'b'), ('c',))
+        self.assertRaises(MissingParameter,
+                          Transport._construct_params, params, ('a', 'b'), ('c',))
 
 
 class TestCarHire(SkyScannerTestCase):
