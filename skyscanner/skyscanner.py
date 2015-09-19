@@ -273,7 +273,7 @@ class Transport(object):
         return {'Accept': 'application/%s' % self.response_format}
 
     def _default_resp_callback(self, resp):
-        if resp.status_code == 304:
+        if resp and resp.status_code == 304:
             raise NotModified
             
         if not resp or not resp.content:
