@@ -27,7 +27,7 @@ Get live prices::
             destinationplace='KUL-sky', 
             outbounddate='2015-05-28', 
             inbounddate='2015-05-31', 
-            adults=1)
+            adults=1).parsed
 
 Flights: Browse Cache
 ~~~~~~~~~~~~~~~~~~~~~
@@ -40,13 +40,13 @@ Cheapest quotes::
 
         flights_cache_service = FlightsCache('<Your API Key>')
         result = flights_cache_service.get_cheapest_quotes(
-            country='UK',
+            market='UK',
             currency='GBP', 
             locale='en-GB', 
             originplace='SIN-sky', 
             destinationplace='KUL-sky', 
             outbounddate='2015-05', 
-            inbounddate='2015-06')
+            inbounddate='2015-06').parsed
 
 Cheapest price by route::
 
@@ -54,13 +54,13 @@ Cheapest price by route::
 
         flights_cache_service = FlightsCache('<Your API Key>')
         result = flights_cache_service.get_cheapest_price_by_route(
-            country='UK',
+            market='UK',
             currency='GBP', 
             locale='en-GB', 
             originplace='SIN-sky', 
             destinationplace='KUL-sky', 
             outbounddate='2015-05', 
-            inbounddate='2015-06')
+            inbounddate='2015-06').parsed
 
 Cheapest price by date::
 
@@ -68,13 +68,13 @@ Cheapest price by date::
 
         flights_cache_service = FlightsCache('<Your API Key>')
         result = flights_cache_service.get_cheapest_price_by_date(
-            country='UK',
+            market='UK',
             currency='GBP', 
             locale='en-GB', 
             originplace='SIN-sky', 
             destinationplace='KUL-sky', 
             outbounddate='2015-05', 
-            inbounddate='2015-06')
+            inbounddate='2015-06').parsed
 
 Grid of prices by date::
 
@@ -82,13 +82,13 @@ Grid of prices by date::
 
         flights_cache_service = FlightsCache('<Your API Key>')
         result = flights_cache_service.get_grid_prices_by_date(
-            country='UK',
+            market='UK',
             currency='GBP', 
             locale='en-GB', 
             originplace='SIN-sky', 
             destinationplace='KUL-sky', 
             outbounddate='2015-05', 
-            inbounddate='2015-06')
+            inbounddate='2015-06').parsed
 
 Car Hire
 ~~~~~~~~
@@ -109,7 +109,7 @@ Get live prices::
             pickupdatetime='2015-05-29T12:00', 
             dropoffdatetime='2015-05-29T18:00', 
             driverage='30',
-            userip='175.156.244.174')
+            userip='175.156.244.174').parsed
 
 Car hire autosuggest::
 
@@ -120,7 +120,7 @@ Car hire autosuggest::
             market='UK', 
             currency='GBP', 
             locale='en-GB', 
-            query='Kuala')
+            query='Kuala').parsed
 
 Hotels
 ~~~~~~
@@ -136,7 +136,7 @@ Hotels autosuggest::
             market='UK', 
             currency='GBP', 
             locale='en-GB', 
-            query='Kuala')
+            query='Kuala').parsed
 
 Hotels prices and details::
 
@@ -151,4 +151,4 @@ Hotels prices and details::
             checkindate='2015-05-26', 
             checkoutdate='2015-05-30', 
             guests=1, 
-            rooms=1)
+            rooms=1).parsed
