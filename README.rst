@@ -71,7 +71,7 @@ Quick start
         inbounddate='2016-07-31',
         adults=1).parsed
 
-        print(result)
+    print(result)
 
 Note that both the ``inbounddate`` and ``outbounddate`` might need to be updated.
 
