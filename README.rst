@@ -73,7 +73,7 @@ Quick start
 
         print(result)
 
-    *Note that both the ``inbounddate`` and ``outbounddate`` might need to be updated.*
+*Note that both the ``inbounddate`` and ``outbounddate`` might need to be updated.*
 
 .. _Skyscanner for Business Contact Page: http://en.business.skyscanner.net/en-gb/contact/
 
