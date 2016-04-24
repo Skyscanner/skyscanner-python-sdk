@@ -1,4 +1,4 @@
-===============================
+=============================================================
 Skyscanner Python SDK
 ===============================
 
@@ -47,10 +47,45 @@ Or, if you have virtualenvwrapper installed::
     $ pip install skyscanner
 
 
-Usage
------
+Quick start
+-----------
 
-https://skyscanner.readthedocs.org/en/latest/usage.html  
+1. Request for an API Key from `Skyscanner for Business Contact Page`_.
+2. Set your API Key:
+
+		from skyscanner import Flights
+		flights_service = Flights('<Your API Key>')
+
+3. Get the flights live pricing result by writing a few lines of code:
+
+	*Note that both the ``inbounddate`` and ``outbounddate`` might need to be updated.*
+
+		from skyscanner import Flights
+
+		flights_service = Flights('<Your API Key>')
+		result = flights_service.get_result(
+		    country='UK',
+		    currency='GBP',
+		    locale='en-GB',
+		    originplace='SIN-sky',
+		    destinationplace='KUL-sky',
+		    outbounddate='2016-07-28',
+		    inbounddate='2016-07-31',
+		    adults=1).parsed
+
+		print(result)
+
+.. _Skyscanner for Business Contact Page: http://en.business.skyscanner.net/en-gb/contact/
+
+
+
+More examples
+-------------
+
+For more example usage, `refer to our documentation`_.
+
+.. _refer to our documentation: https://skyscanner.readthedocs.org/en/latest/usage.html
+  
 
 Known Issues
 ------------
