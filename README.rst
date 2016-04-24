@@ -50,7 +50,7 @@ Or, if you have virtualenvwrapper installed::
 Quick start
 -----------
 
-1. Request for an API Key from <a href="http://en.business.skyscanner.net/en-gb/contact/" target="_blank">Skyscanner for Business Contact Page</a>.
+1. Request for an API Key from `Skyscanner for Business Contact Page`_.
 2. Set your API Key::
 
     from skyscanner import Flights
@@ -74,6 +74,9 @@ Quick start
         print(result)
 
     *Note that both the ``inbounddate`` and ``outbounddate`` might need to be updated.*
+
+.. _Skyscanner for Business Contact Page: http://en.business.skyscanner.net/en-gb/contact/
+
 
 More examples
 -------------
