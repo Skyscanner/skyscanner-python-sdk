@@ -1,5 +1,24 @@
+# @Author: ardydedase <ardy.dedase@skyscanner.net>
+# @Date:   2016-03-12 19:47:15
+# @Last Modified by:   ardydedase
+# @Last Modified time: 2016-04-25 11:15:49
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+__credits__ = ["Ardy Dedase", "Denis Dudnik"]
+__copyright__ = "Copyright (C) 2016 Skyscanner Ltd"
+__license__ = """
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied. See the License for the specific
+language governing permissions and limitations under the License.
+"""
 
 """
 test_skyscanner
@@ -13,9 +32,12 @@ import json
 from datetime import datetime, timedelta
 from requests import HTTPError
 
-from skyscanner.skyscanner import (Flights, Transport, FlightsCache, CarHire, Hotels,
+from skyscanner.skyscanner import (Flights, Transport, FlightsCache,
+                                   CarHire, Hotels,
                                    EmptyResponse, MissingParameter,
                                    STRICT, GRACEFUL, IGNORE)
+
+# TODO: Mock responses
 
 
 class SkyScannerTestCase(unittest.TestCase):
@@ -23,7 +45,7 @@ class SkyScannerTestCase(unittest.TestCase):
     """Generic TestCase class to support default failure messages."""
 
     def setUp(self):
-        # API Key that's meant for unit tests only
+        # This API Key is meant for tests only
         self.api_key = 'py495888586774232134437415165965'
 
         self.result = None
@@ -34,10 +56,6 @@ class SkyScannerTestCase(unittest.TestCase):
     def assertTrue(self, expr, msg=None):
         super(SkyScannerTestCase, self).assertTrue(
             expr, msg=msg or self._default_message())
-
-    # def assertIsNotNone(self, obj, msg=None):
-    #     super(SkyScannerTestCase, self).assertIsNotNone(
-    #         obj, msg=msg or self._default_message())
 
     def _default_message(self):
         return ('API Response: %s...' % (str(self.result)[:100])) if self.result is not None else None
@@ -134,11 +152,12 @@ class TestTransport(SkyScannerTestCase):
                                            HTTPError('400'), STRICT, 'json')
         except HTTPError as e:
             try:
-                self.assertEqual(e.message, ('400: %s' % '\n\t'.join(['1', '2'])))
+                self.assertEqual(
+                    e.message, ('400: %s' % '\n\t'.join(['1', '2'])))
             except AttributeError as e:
                 # Exception for Python 3
                 print(e)
-    
+
         try:
             self.assertRaises(HTTPError,
                               Transport._with_error_handling, FakeResponse(status_code=400,

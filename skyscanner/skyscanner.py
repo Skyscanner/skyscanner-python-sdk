@@ -1,4 +1,25 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# @Authors: ardydedase <ardy.dedase@skyscanner.net>
+# @Date:   2015-10-05 22:31:56
+# @Last Modified by:   ardydedase
+# @Last Modified time: 2016-04-25 11:17:49
+
+__credits__ = ["Ardy Dedase", "Denis Dudnik"]
+__copyright__ = "Copyright (C) 2016 Skyscanner Ltd"
+__license__ = """
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied. See the License for the specific
+language governing permissions and limitations under the License.
+"""
+
 import sys
 import time
 import logging
@@ -28,7 +49,8 @@ STRICT, GRACEFUL, IGNORE = 'strict', 'graceful', 'ignore'
 
 class ExceededRetries(Exception):
 
-    """Is thrown when allowed number of polls were performed but response is not complete yet."""
+    """Is thrown when allowed number of polls were
+    performed but response is not complete yet."""
     pass
 
 
@@ -112,12 +134,13 @@ class Transport(object):
             })
 
         request = getattr(requests, method.lower())
+
         log.debug('* Request URL: %s' % service_url)
         log.debug('* Request method: %s' % method)
         log.debug('* Request query params: %s' % params)
         log.debug('* Request headers: %s' % headers)
-        r = request(service_url, headers=headers, data=data, params=params)
 
+        r = request(service_url, headers=headers, data=data, params=params)
         try:
             r.raise_for_status()
             return callback(r)
