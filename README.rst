@@ -12,10 +12,6 @@ Skyscanner Python SDK
         :target: https://readthedocs.org/projects/skyscanner/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://img.shields.io/pypi/dm/skyscanner.svg
-        :target: https://pypi.python.org/pypi/skyscanner
-        :alt: Number of PyPI downloads
-
 .. image:: https://coveralls.io/repos/Skyscanner/skyscanner-python-sdk/badge.svg?branch=master&service=github
         :target: https://coveralls.io/github/Skyscanner/skyscanner-python-sdk?branch=master
 
