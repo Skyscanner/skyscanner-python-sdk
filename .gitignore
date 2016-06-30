@@ -32,3 +32,4 @@ nosetests.xml
 
 # Mr Developer
 venv*
+.idea
