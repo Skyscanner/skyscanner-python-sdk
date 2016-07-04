@@ -413,7 +413,7 @@ class FlightsCache(Flights):
 
     def get_grid_prices_by_date(self, **params):
         """
-        {API_HOST}/apiservices/browsequotes/v1.0/{market}/{currency}/{locale}/{originPlace}/{destinationPlace}/{outboundPartialDate}/{inboundPartialDate}?apiKey={apiKey}
+        {API_HOST}/apiservices/browsegrid/v1.0/{market}/{currency}/{locale}/{originPlace}/{destinationPlace}/{outboundPartialDate}/{inboundPartialDate}?apiKey={apiKey}
         """
         service_url = "{url}/{params_path}".format(
             url=self.BROWSE_GRID_SERVICE_URL,
