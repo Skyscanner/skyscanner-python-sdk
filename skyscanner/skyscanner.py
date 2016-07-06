@@ -118,7 +118,7 @@ class Transport(object):
         ]
 
         additional_params = dict(
-            (key, value) for key, value in params.iteritems() if key in polling_params)
+            (key, value) for key, value in params.items() if key in polling_params)
 
         return additional_params
 
