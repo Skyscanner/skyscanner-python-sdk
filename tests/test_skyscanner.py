@@ -29,6 +29,7 @@ Tests for `skyscanner` module.
 
 import unittest
 import json
+import pprint
 from datetime import datetime, timedelta
 from requests import HTTPError
 
@@ -668,6 +669,20 @@ class TestFlights(SkyScannerTestCase):
 
         self.assertTrue(poll_url)
 
+    def test_get_additional_params(self):
+        flights_service = Flights(self.api_key)
+
+        additional_params = flights_service.get_additional_params(
+            stops=0,
+            country='US',
+            currency='USD',
+            locale='en-US',
+            originplace='DTW-sky',
+            destinationplace='PEK-sky',
+            outbounddate=self.outbound,
+            inbounddate=self.inbound)
+        self.assertEqual(additional_params, {'stops': 0})
+    
     # def test_poll_session(self):
     #     flights_service = Flights(self.api_key)
 
@@ -722,6 +737,7 @@ class TestFlights(SkyScannerTestCase):
             locale='en-GB',
             originplace='SIN-sky',
             destinationplace='KUL-sky',
+            stops=1,
             outbounddate=self.outbound_days,
             inbounddate=self.inbound_days,
             adults=1).parsed

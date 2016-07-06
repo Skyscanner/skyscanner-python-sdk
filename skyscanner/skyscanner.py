@@ -92,11 +92,42 @@ class Transport(object):
         self.api_key = api_key
         self.response_format = response_format.lower()
 
+    def get_additional_params(self, **params):
+        """
+        Filter to get the additional params needed for polling
+        """
+
+        # TODO: Move these params to their own vertical if needed.
+        polling_params = [
+            'locationschema',
+            'carrierschema',
+            'sorttype',
+            'sortorder',
+            'originairports',
+            'destinationairports',
+            'stops',
+            'outbounddeparttime',
+            'outbounddepartstarttime',
+            'outbounddepartendtime',
+            'inbounddeparttime',
+            'inbounddepartstarttime',
+            'inbounddepartendtime',
+            'duration',
+            'includecarriers',
+            'excludecarriers'
+        ]
+
+        additional_params = dict(
+            (key, value) for key, value in params.iteritems() if key in polling_params)
+
+        return additional_params
+
     def get_result(self, errors=STRICT, **params):
         """
         Get all results, no filtering, etc. by creating and polling the session.
         """
-        return self.poll_session(self.create_session(**params), errors=errors)
+        additional_params = self.get_additional_params(**params)
+        return self.poll_session(self.create_session(**params), errors=errors, **additional_params)
 
     def make_request(self, service_url, method='get', headers=None, data=None,
                      callback=None, errors=STRICT, **params):
