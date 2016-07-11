@@ -65,6 +65,10 @@ class MissingParameter(KeyError):
     """Is thrown when expected request parameter is missing."""
     pass
 
+class NotModified(Exception):
+
+    """Is thrown when the server gives a 304 response."""
+    pass
 
 class Transport(object):
 
@@ -220,13 +224,17 @@ class Transport(object):
         time.sleep(initial_delay)
         poll_response = None
         for n in range(tries):
-            poll_response = self.make_request(poll_url, headers=self._headers(),
-                                              errors=errors, **params)
+            try:
+                poll_response = self.make_request(poll_url, headers=self._headers(),
+                                                  errors=errors, **params)
 
-            if self.is_poll_complete(poll_response):
-                return poll_response
-            else:
-                time.sleep(delay)
+                if self.is_poll_complete(poll_response):
+                    return poll_response
+
+            except NotModified:
+                pass
+            time.sleep(delay)
+               
 
         if STRICT == errors:
             raise ExceededRetries(
@@ -319,6 +327,9 @@ class Transport(object):
         return {'Accept': 'application/%s' % self.response_format}
 
     def _default_resp_callback(self, resp):
+        if resp and resp.status_code == 304:
+            raise NotModified
+            
         if not resp or not resp.content:
             raise EmptyResponse('Response has no content.')
 
