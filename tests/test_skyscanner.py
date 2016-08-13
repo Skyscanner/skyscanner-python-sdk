@@ -5,7 +5,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__credits__ = ["Ardy Dedase", "Denis Dudnik"]
+__credits__ = ["Ardy Dedase", "Denis Dudnik", "Kelvin Tay"]
 __copyright__ = "Copyright (C) 2016 Skyscanner Ltd"
 __license__ = """
 Licensed under the Apache License, Version 2.0 (the "License");
