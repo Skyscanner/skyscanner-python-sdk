@@ -2,7 +2,7 @@
 # @Date:   2016-03-12 19:47:15
 # @Last Modified by:   ardydedase
 # @Last Modified time: 2016-04-25 11:15:49
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 __credits__ = ["Ardy Dedase", "Denis Dudnik"]
@@ -27,16 +27,16 @@ test_skyscanner
 Tests for `skyscanner` module.
 """
 
-import unittest
 import json
-import pprint
+import unittest
 from datetime import datetime, timedelta
+
 from requests import HTTPError
 
-from skyscanner.skyscanner import (Flights, Transport, FlightsCache,
-                                   CarHire, Hotels,
-                                   EmptyResponse, MissingParameter,
-                                   STRICT, GRACEFUL, IGNORE)
+from skyscanner.skyscanner import (GRACEFUL, IGNORE, STRICT, CarHire,
+                                   EmptyResponse, Flights, FlightsCache,
+                                   Hotels, MissingParameter, Transport)
+
 
 # TODO: Mock responses
 
@@ -59,7 +59,10 @@ class SkyScannerTestCase(unittest.TestCase):
             expr, msg=msg or self._default_message())
 
     def _default_message(self):
-        return ('API Response: %s...' % (str(self.result)[:100])) if self.result is not None else None
+        if self.result is None:
+            return None
+
+        return 'API Response: %s...' % (str(self.result)[:100])
 
 
 class FakeResponse(object):
@@ -85,7 +88,7 @@ class TestTransport(SkyScannerTestCase):
         transport = Transport(self.api_key, response_format='xml')
         self.result = transport.get_markets('de-DE').parsed
 
-        self.assertTrue(None != self.result.find('./Countries'))
+        self.assertTrue(self.result.find('./Countries') is not None)
         self.assertTrue(len(self.result.findall('./Countries/CountryDto')) > 0)
 
     def test_location_autosuggest_json(self):
@@ -105,7 +108,7 @@ class TestTransport(SkyScannerTestCase):
                                                      currency='EUR',
                                                      locale='de-DE').parsed
 
-        self.assertTrue(None != self.result.find('./Places'))
+        self.assertTrue(self.result.find('./Places') is not None)
         self.assertTrue(len(self.result.findall('./Places/PlaceDto')) > 0)
 
     def test_create_session(self):
@@ -116,41 +119,59 @@ class TestTransport(SkyScannerTestCase):
         for format in ['json', 'xml']:
             try:
                 self.assertRaises(RuntimeError,
-                                  Transport._with_error_handling, FakeResponse(), RuntimeError, STRICT, format)
+                                  Transport._with_error_handling,
+                                  FakeResponse(),
+                                  RuntimeError, STRICT, format)
 
                 self.assertRaises(HTTPError,
-                                  Transport._with_error_handling, FakeResponse(status_code=404), HTTPError(), STRICT, format)
+                                  Transport._with_error_handling,
+                                  FakeResponse(status_code=404),
+                                  HTTPError(), STRICT, format)
 
                 self.assertRaises(HTTPError,
-                                  Transport._with_error_handling, FakeResponse(status_code=429), HTTPError('429: '), STRICT, format)
+                                  Transport._with_error_handling,
+                                  FakeResponse(status_code=429),
+                                  HTTPError('429: '), STRICT, format)
                 try:
                     Transport._with_error_handling(
-                        FakeResponse(status_code=429), HTTPError('429: '), STRICT, format)
+                        FakeResponse(status_code=429),
+                        HTTPError('429: '), STRICT, format
+                    )
                 except HTTPError as e:
                     self.assertEqual(
-                        e.message, '429: Too many requests in the last minute.')
+                        e.message,
+                        '429: Too many requests in the last minute.'
+                    )
 
                 self.assertRaises(HTTPError,
-                                  Transport._with_error_handling, FakeResponse(status_code=400), HTTPError('400'), STRICT, format)
+                                  Transport._with_error_handling,
+                                  FakeResponse(status_code=400),
+                                  HTTPError('400'), STRICT, format)
                 try:
                     Transport._with_error_handling(
-                        FakeResponse(status_code=400), HTTPError('400'), STRICT, format)
+                        FakeResponse(status_code=400),
+                        HTTPError('400'), STRICT, format
+                    )
                 except HTTPError as e:
                     self.assertEqual(e.message, '400')
             except Exception as e:
                 # Exception for Python 2.6
                 print(e)
 
+        fake_resp_content = '{"ValidationErrors": ' \
+                            '[{"Message": "1"}, {"Message": "2"}]}'
+
         self.assertRaises(HTTPError,
-                          Transport._with_error_handling, FakeResponse(status_code=400,
-                                                                       content='{"ValidationErrors": '
-                                                                       '[{"Message": "1"}, {"Message": "2"}]}'),
+                          Transport._with_error_handling,
+                          FakeResponse(status_code=400,
+                                       content=fake_resp_content),
                           HTTPError('400'), STRICT, 'json')
         try:
-            Transport._with_error_handling(FakeResponse(status_code=400,
-                                                        content='{"ValidationErrors": '
-                                                                '[{"Message": "1"}, {"Message": "2"}]}'),
-                                           HTTPError('400'), STRICT, 'json')
+            Transport._with_error_handling(
+                FakeResponse(status_code=400,
+                             content=fake_resp_content),
+                HTTPError('400'), STRICT, 'json'
+            )
         except HTTPError as e:
             try:
                 self.assertEqual(
@@ -161,15 +182,17 @@ class TestTransport(SkyScannerTestCase):
 
         try:
             self.assertRaises(HTTPError,
-                              Transport._with_error_handling, FakeResponse(status_code=400,
-                                                                           content='<Root><ValidationErrors>'
-                                                                           '<ValidationErrorDto>'
-                                                                           '<Message>1</Message'
-                                                                           '</ValidationErrorDto>'
-                                                                           '<ValidationErrorDto>'
-                                                                           '<Message>2</Message'
-                                                                           '</ValidationErrorDto>'
-                                                                           '</ValidationErrors></Root>'),
+                              Transport._with_error_handling,
+                              FakeResponse(status_code=400,
+                                           content='<Root><ValidationErrors>'
+                                                   '<ValidationErrorDto>'
+                                                   '<Message>1</Message'
+                                                   '</ValidationErrorDto>'
+                                                   '<ValidationErrorDto>'
+                                                   '<Message>2</Message'
+                                                   '</ValidationErrorDto>'
+                                                   '</ValidationErrors></Root>'
+                                           ),
                               HTTPError('400'), STRICT, 'xml')
         except Exception as e:
             # Exception for Python 2.6
@@ -177,16 +200,17 @@ class TestTransport(SkyScannerTestCase):
 
         try:
             try:
-                Transport._with_error_handling(FakeResponse(status_code=400,
-                                                            content='<Root><ValidationErrors>'
-                                                                    '<ValidationErrorDto>'
-                                                                    '<Message>1</Message'
-                                                                    '</ValidationErrorDto>'
-                                                                    '<ValidationErrorDto>'
-                                                                    '<Message>2</Message'
-                                                                    '</ValidationErrorDto>'
-                                                                    '</ValidationErrors></Root>'),
-                                               HTTPError('400'), STRICT, 'xml')
+                Transport._with_error_handling(
+                    FakeResponse(status_code=400,
+                                 content='<Root><ValidationErrors>'
+                                         '<ValidationErrorDto>'
+                                         '<Message>1</Message'
+                                         '</ValidationErrorDto>'
+                                         '<ValidationErrorDto>'
+                                         '<Message>2</Message'
+                                         '</ValidationErrorDto>'
+                                         '</ValidationErrors></Root>'),
+                    HTTPError('400'), STRICT, 'xml')
             except Exception as e:
                 # Exception for Python 2.6
                 print(e)
@@ -200,31 +224,40 @@ class TestTransport(SkyScannerTestCase):
     def test_with_error_handling_graceful(self):
         result = Transport._with_error_handling(
             FakeResponse(), EmptyResponse(), GRACEFUL, 'json')
-        self.assertTrue(None != result)
+        self.assertTrue(result is not None)
         self.assertEqual(None, result.parsed)
         result = Transport._with_error_handling(
             FakeResponse(), EmptyResponse(), GRACEFUL, 'xml')
-        self.assertTrue(None != result)
+        self.assertTrue(result is not None)
         self.assertEqual(None, result.parsed)
 
-        result = Transport._with_error_handling(FakeResponse(content='{"valid": 1}', status_code=429),
-                                                HTTPError(), GRACEFUL, 'json').parsed
-        self.assertTrue(None != result)
+        result = Transport._with_error_handling(
+            FakeResponse(content='{"valid": 1}', status_code=429),
+            HTTPError(), GRACEFUL, 'json'
+        ).parsed
+        self.assertTrue(result is not None)
         self.assertTrue('valid' in result)
         self.assertEqual(result['valid'], 1)
-        result = Transport._with_error_handling(FakeResponse(content='<valid>1</valid>', status_code=429),
-                                                HTTPError(), GRACEFUL, 'xml').parsed
-        self.assertTrue(None != result)
+
+        result = Transport._with_error_handling(
+            FakeResponse(content='<valid>1</valid>', status_code=429),
+            HTTPError(), GRACEFUL, 'xml'
+        ).parsed
+        self.assertTrue(result is not None)
         self.assertEqual(result.tag, 'valid')
         self.assertEqual(result.text, '1')
 
-        result = Transport._with_error_handling(FakeResponse(content='invalid', status_code=429),
-                                                HTTPError(), GRACEFUL, 'json').parsed
+        result = Transport._with_error_handling(
+            FakeResponse(content='invalid', status_code=429),
+            HTTPError(), GRACEFUL, 'json'
+        ).parsed
         self.assertEqual(None, result)
 
         try:
-            result = Transport._with_error_handling(FakeResponse(content='invalid', status_code=429),
-                                                    HTTPError(), GRACEFUL, 'xml').parsed
+            result = Transport._with_error_handling(
+                FakeResponse(content='invalid', status_code=429),
+                HTTPError(), GRACEFUL, 'xml'
+            ).parsed
         except Exception as e:
             print(e)
 
@@ -264,29 +297,37 @@ class TestTransport(SkyScannerTestCase):
             print(e)
 
         result = Transport._with_error_handling(
-            FakeResponse(content='{"valid": 1}'), HTTPError(), IGNORE, 'json').parsed
-        self.assertTrue(None != result)
+            FakeResponse(content='{"valid": 1}'),
+            HTTPError(), IGNORE, 'json'
+        ).parsed
+        self.assertTrue(result is not None)
         self.assertTrue('valid' in result)
         self.assertEqual(result['valid'], 1)
+
         result = Transport._with_error_handling(
-            FakeResponse(content='<valid>1</valid>'), HTTPError(), IGNORE, 'xml').parsed
-        self.assertTrue(None != result)
+            FakeResponse(content='<valid>1</valid>'),
+            HTTPError(), IGNORE, 'xml'
+        ).parsed
+        self.assertTrue(result is not None)
         self.assertEqual(result.tag, 'valid')
         self.assertEqual(result.text, '1')
 
     def test_default_resp_callback_json(self):
         t = Transport(self.api_key, response_format='json')
         self.assertRaises(EmptyResponse,
-                          t._default_resp_callback, None)
+                          t._default_resp_callback,
+                          None)
         self.assertRaises(EmptyResponse,
-                          t._default_resp_callback, FakeResponse(content=''))
+                          t._default_resp_callback,
+                          FakeResponse(content=''))
 
         self.assertRaises(ValueError,
-                          t._default_resp_callback, FakeResponse(content='invalid json'))
+                          t._default_resp_callback,
+                          FakeResponse(content='invalid json'))
 
         resp_json = t._default_resp_callback(
             FakeResponse(content='{"valid": 1}')).parsed
-        self.assertTrue(None != resp_json)
+        self.assertTrue(resp_json is not None)
         self.assertTrue('valid' in resp_json)
         self.assertEqual(resp_json['valid'], 1)
 
@@ -299,14 +340,18 @@ class TestTransport(SkyScannerTestCase):
 
         try:
             self.assertRaises(ValueError,
-                              t._default_resp_callback, FakeResponse(content='invalid XML'))
+                              t._default_resp_callback,
+                              FakeResponse(content='invalid XML')
+                              )
         except:
             self.assertRaises(Exception,
-                              t._default_resp_callback, FakeResponse(content='invalid XML'))
+                              t._default_resp_callback,
+                              FakeResponse(content='invalid XML')
+                              )
 
         resp_xml = t._default_resp_callback(
             FakeResponse(content='<valid a="test">1</valid>')).parsed
-        self.assertTrue(None != resp_xml)
+        self.assertTrue(resp_xml is not None)
         self.assertEqual(resp_xml.tag, 'valid')
         self.assertEqual(resp_xml.text, '1')
         self.assertEqual(resp_xml.get('a'), 'test')
@@ -324,7 +369,9 @@ class TestTransport(SkyScannerTestCase):
 
         params = dict(a=1, c=3)
         self.assertRaises(MissingParameter,
-                          Transport._construct_params, params, ('a', 'b'), ('c',))
+                          Transport._construct_params,
+                          params, ('a', 'b'), ('c',)
+                          )
 
 
 class TestCarHire(SkyScannerTestCase):
@@ -358,13 +405,17 @@ class TestCarHire(SkyScannerTestCase):
             locale='de-DE',
             query='Berlin').parsed
 
-        self.assertTrue(None != self.result.find('./Results'))
+        self.assertTrue(self.result.find('./Results') is not None)
         self.assertTrue(
             len(self.result.findall('./Results/HotelResultDto')) > 0)
 
     def test_get_result_json(self):
         """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip}
+        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+        {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
+        {pickupdatetime}/{dropoffdatetime}/{driverage}
+        ?apiKey={apiKey}&userip={userip}
+
         YYYY-MM-DDThh:mm
         """
         carhire_service = CarHire(self.api_key, response_format='json')
@@ -385,7 +436,11 @@ class TestCarHire(SkyScannerTestCase):
 
     # def test_get_result_xml(self):
     #     """
-    #     http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip}
+    #     http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+    #     {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
+    #     {pickupdatetime}/{dropoffdatetime}/{driverage}
+    #     ?apiKey={apiKey}&userip={userip}
+    #
     #     YYYY-MM-DDThh:mm
     #     """
     #     carhire_service = CarHire(self.api_key, response_format='xml')
@@ -406,7 +461,11 @@ class TestCarHire(SkyScannerTestCase):
 
     def test_create_session(self):
         """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip}
+        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+        {market}/{currency}/{locale}/{pickupplace}/
+        {dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}
+        ?apiKey={apiKey}&userip={userip}
+
         YYYY-MM-DDThh:mm
         """
         carhire_service = CarHire(self.api_key)
@@ -456,13 +515,17 @@ class TestHotels(SkyScannerTestCase):
             locale='de-DE',
             query='Berlin').parsed
 
-        self.assertTrue(None != self.result.find('./Results'))
+        self.assertTrue(self.result.find('./Results') is not None)
         self.assertTrue(
             len(self.result.findall('./Results/HotelResultDto')) > 0)
 
     def test_get_result_json(self):
         """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip}
+        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+        {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
+        {pickupdatetime}/{dropoffdatetime}/{driverage}
+        ?apiKey={apiKey}&userip={userip}
+
         YYYY-MM-DDThh:mm
         """
 
@@ -482,7 +545,11 @@ class TestHotels(SkyScannerTestCase):
 
     def test_get_result_xml(self):
         """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip}
+        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+        {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
+        {pickupdatetime}/{dropoffdatetime}/{driverage}
+        ?apiKey={apiKey}&userip={userip}
+
         YYYY-MM-DDThh:mm
         """
 
@@ -497,12 +564,16 @@ class TestHotels(SkyScannerTestCase):
             guests=1,
             rooms=1).parsed
 
-        self.assertTrue(None != self.result.find('./Hotels'))
+        self.assertTrue(self.result.find('./Hotels') is not None)
         self.assertTrue(len(self.result.findall('./Hotels/HotelDto')) > 0)
 
     def test_create_session(self):
         """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/{market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}?apiKey={apiKey}&userip={userip}
+        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+        {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
+        {pickupdatetime}/{dropoffdatetime}/{driverage}
+        ?apiKey={apiKey}&userip={userip}
+
         YYYY-MM-DDThh:mm
         """
         hotels_service = Hotels(self.api_key)
@@ -562,7 +633,7 @@ class TestFlights(SkyScannerTestCase):
             outbounddate=self.outbound,
             inbounddate=self.inbound).parsed
 
-        self.assertTrue(None != self.result.find('./Quotes'))
+        self.assertTrue(self.result.find('./Quotes') is not None)
         self.assertTrue(len(self.result.findall('./Quotes/QuoteDto')) > 0)
 
     def test_get_cheapest_price_by_route_json(self):
@@ -592,7 +663,7 @@ class TestFlights(SkyScannerTestCase):
             outbounddate=self.outbound,
             inbounddate=self.inbound).parsed
 
-        self.assertTrue(None != self.result.find('./Routes'))
+        self.assertTrue(self.result.find('./Routes') is not None)
         self.assertTrue(len(self.result.findall('./Routes/RouteDto')) > 0)
 
     def test_get_cheapest_price_by_date_json(self):
@@ -622,7 +693,7 @@ class TestFlights(SkyScannerTestCase):
             outbounddate=self.outbound,
             inbounddate=self.inbound).parsed
 
-        self.assertTrue(None != self.result.find('./Quotes'))
+        self.assertTrue(self.result.find('./Quotes') is not None)
         self.assertTrue(len(self.result.findall('./Quotes/QuoteDto')) > 0)
 
     def test_get_grid_prices_by_date_json(self):
@@ -652,7 +723,7 @@ class TestFlights(SkyScannerTestCase):
             outbounddate=self.outbound,
             inbounddate=self.inbound).parsed
 
-        self.assertTrue(None != self.result.find('./Dates'))
+        self.assertTrue(self.result.find('./Dates') is not None)
         self.assertTrue(len(self.result.findall('./Dates/ArrayOfCellDto')) > 0)
 
     def test_create_session(self):
@@ -682,10 +753,10 @@ class TestFlights(SkyScannerTestCase):
             outbounddate=self.outbound,
             inbounddate=self.inbound)
         self.assertEqual(additional_params, {'stops': 0})
-    
+
     # def test_poll_session(self):
     #     flights_service = Flights(self.api_key)
-
+    #
     #     poll_url = flights_service.create_session(
     #         country='UK',
     #         currency='GBP',
@@ -695,16 +766,16 @@ class TestFlights(SkyScannerTestCase):
     #         outbounddate='2015-05-28',
     #         inbounddate='2015-05-31',
     #         adults=1)
-
+    #
     #     result = flights_service.poll_session(poll_url, sorttype='carrier')
-
+    #
     #     self.assertTrue(len(result['Itineraries']) > 0)
-
+    #
     #     pass
-
+    #
     # def test_request_booking_details(self):
     #     flights_service = Flights(self.api_key)
-
+    #
     #     poll_url = flights_service.create_session(
     #         country='UK',
     #         currency='GBP',
@@ -714,18 +785,22 @@ class TestFlights(SkyScannerTestCase):
     #         outbounddate='2015-05-28',
     #         inbounddate='2015-05-31',
     #         adults=1)
-
-    #     flights_results = flights_service.poll_session(poll_url, sorttype='carrier')
-
+    #
+    #     flights_results = flights_service.poll_session(
+    #         poll_url,
+    #         sorttype='carrier')
+    #
     #     print(flights_results)
-
+    #
     #     itinerary = flights_results['Itineraries'][0]
-
-    #     result = flights_service.request_booking_details(poll_url, outboundlegid=itinerary['OutboundLegId'],
-    #                                                      inboundlegid=itinerary['InboundLegId'])
-
+    #
+    #     result = flights_service.request_booking_details(
+    #         poll_url,
+    #         outboundlegid=itinerary['OutboundLegId'],
+    #         inboundlegid=itinerary['InboundLegId'])
+    #
     #     print(result)
-
+    #
     #     pass
 
     def test_get_result_json(self):
@@ -742,7 +817,7 @@ class TestFlights(SkyScannerTestCase):
             inbounddate=self.inbound_days,
             adults=1).parsed
 
-        self.assertTrue(None != self.result)
+        self.assertTrue(self.result is not None)
         self.assertTrue('Itineraries' in self.result)
         self.assertTrue(len(self.result['Itineraries']) > 0)
 
@@ -759,8 +834,8 @@ class TestFlights(SkyScannerTestCase):
             inbounddate=self.inbound_days,
             adults=1).parsed
 
-        self.assertTrue(None != self.result)
-        self.assertTrue(None != self.result.find('./Itineraries'))
+        self.assertTrue(self.result is not None)
+        self.assertTrue(self.result.find('./Itineraries') is not None)
         self.assertTrue(
             len(self.result.findall('./Itineraries/ItineraryApiDto')) > 0)
 
