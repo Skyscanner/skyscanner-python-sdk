@@ -19,7 +19,7 @@ requirements = [
     'requests'
 ]
 extras_requirements = {
-    'Faster XML processing':  ["lxml"]
+    'Faster XML processing': ["lxml"]
 }
 test_requirements = [
     # TODO: put package test requirements here
