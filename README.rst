@@ -49,12 +49,12 @@ Quick start
 1. Request for an API Key from `Skyscanner for Business Contact Page`_.
 2. Set your API Key::
 
-    from skyscanner import Flights
+    from skyscanner.skyscanner import Flights
     flights_service = Flights('<Your API Key>')
 
 3. Get the flights live pricing result by writing a few lines of code::
 
-    from skyscanner import Flights
+    from skyscanner.skyscanner import Flights
 
     flights_service = Flights('<Your API Key>')
     result = flights_service.get_result(
