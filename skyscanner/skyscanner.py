@@ -131,7 +131,7 @@ class Transport(object):
 
         return additional_params
 
-    def get_result(self, errors=STRICT, **params):
+    def get_result(self, errors=GRACEFUL, **params):
         """
         Get all results, no filtering, etc. by creating and polling the
         session.
@@ -144,7 +144,7 @@ class Transport(object):
         )
 
     def make_request(self, service_url, method='get', headers=None, data=None,
-                     callback=None, errors=STRICT, **params):
+                     callback=None, errors=GRACEFUL, **params):
         """
         Reusable method for performing requests.
 
@@ -247,7 +247,7 @@ class Transport(object):
         raise NotImplementedError('Should be implemented by a sub-class.')
 
     def poll_session(self, poll_url, initial_delay=2, delay=1, tries=20,
-                     errors=STRICT, **params):
+                     errors=GRACEFUL, **params):
         """
         Poll the URL
         :param poll_url - URL to poll,

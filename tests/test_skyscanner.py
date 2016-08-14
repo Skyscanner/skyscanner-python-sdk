@@ -806,7 +806,6 @@ class TestFlights(SkyScannerTestCase):
     def test_get_result_json(self):
         flights_service = Flights(self.api_key, response_format='json')
         self.result = flights_service.get_result(
-            errors=GRACEFUL,
             country='UK',
             currency='GBP',
             locale='en-GB',
@@ -816,6 +815,8 @@ class TestFlights(SkyScannerTestCase):
             outbounddate=self.outbound_days,
             inbounddate=self.inbound_days,
             adults=1).parsed
+
+
 
         self.assertTrue(self.result is not None)
         self.assertTrue('Itineraries' in self.result)
