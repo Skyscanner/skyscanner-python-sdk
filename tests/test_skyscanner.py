@@ -1,7 +1,7 @@
 # @Author: ardydedase <ardy.dedase@skyscanner.net>
 # @Date:   2016-03-12 19:47:15
 # @Last Modified by:   ardydedase
-# @Last Modified time: 2016-04-25 11:15:49
+# @Last Modified time: 2016-08-14 23:40:34
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -815,8 +815,6 @@ class TestFlights(SkyScannerTestCase):
             outbounddate=self.outbound_days,
             inbounddate=self.inbound_days,
             adults=1).parsed
-
-
 
         self.assertTrue(self.result is not None)
         self.assertTrue('Itineraries' in self.result)

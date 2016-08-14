@@ -4,7 +4,7 @@ Usage
 
 To use Skyscanner Python SDK in a project, make sure that you set your API Key. For example::
 
-        from skyscanner import Flights
+        from skyscanner.skyscanner import Flights
         
         flights_service = Flights('<Your API Key>')        
 
@@ -16,7 +16,7 @@ http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingList
 
 Get live prices::
 
-        from skyscanner import Flights
+        from skyscanner.skyscanner import Flights
         
         flights_service = Flights('<Your API Key>')
         result = flights_service.get_result(
@@ -36,7 +36,7 @@ http://business.skyscanner.net/portal/en-GB/Documentation/FlightsBrowseCacheOver
 
 Cheapest quotes::
 
-        from skyscanner import FlightsCache
+        from skyscanner.skyscanner import FlightsCache
 
         flights_cache_service = FlightsCache('<Your API Key>')
         result = flights_cache_service.get_cheapest_quotes(
@@ -50,7 +50,7 @@ Cheapest quotes::
 
 Cheapest price by route::
 
-        from skyscanner import FlightsCache
+        from skyscanner.skyscanner import FlightsCache
 
         flights_cache_service = FlightsCache('<Your API Key>')
         result = flights_cache_service.get_cheapest_price_by_route(
@@ -64,7 +64,7 @@ Cheapest price by route::
 
 Cheapest price by date::
 
-        from skyscanner import FlightsCache
+        from skyscanner.skyscanner import FlightsCache
 
         flights_cache_service = FlightsCache('<Your API Key>')
         result = flights_cache_service.get_cheapest_price_by_date(
@@ -78,7 +78,7 @@ Cheapest price by date::
 
 Grid of prices by date::
 
-        from skyscanner import FlightsCache
+        from skyscanner.skyscanner import FlightsCache
 
         flights_cache_service = FlightsCache('<Your API Key>')
         result = flights_cache_service.get_grid_prices_by_date(
@@ -97,7 +97,7 @@ http://business.skyscanner.net/portal/en-GB/Documentation/CarHireLivePricing
 
 Get live prices::
     
-        from skyscanner import CarHire
+        from skyscanner.skyscanner import CarHire
 
         carhire_service = CarHire('<Your API Key>')
         result = carhire_service.get_result(
@@ -113,7 +113,7 @@ Get live prices::
 
 Car hire autosuggest::
 
-        from skyscanner import CarHire
+        from skyscanner.skyscanner import CarHire
 
         carhire_service = CarHire('<Your API Key>')
         result = carhire_service.location_autosuggest(
@@ -129,7 +129,7 @@ http://business.skyscanner.net/portal/en-GB/Documentation/HotelsOverview
 
 Hotels autosuggest::
     
-        from skyscanner import Hotels
+        from skyscanner.skyscanner import Hotels
 
         hotels_service = Hotels('<Your API Key>')
         result = hotels_service.location_autosuggest(
@@ -140,7 +140,7 @@ Hotels autosuggest::
 
 Hotels prices and details::
 
-        from skyscanner import Hotels
+        from skyscanner.skyscanner import Hotels
 
         hotels_service = Hotels(self.api_key)
         result = hotels_service.get_result(
