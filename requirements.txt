@@ -1,3 +1,4 @@
 wheel==0.23.0
 flake8
 requests
+skyscanner
