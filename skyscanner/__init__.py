@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Ardy Dedase'
 __email__ = 'ardy.dedase@skyscanner.net'
-__version__ = '1.1.3'
+__version__ = '1.1.4'
 __copyright__ = "Copyright (C) 2016 Skyscanner Ltd"
 __license__ = """
 Licensed under the Apache License, Version 2.0 (the "License");
