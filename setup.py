@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import skyscanner
 
 try:
     from setuptools import setup
@@ -28,7 +29,7 @@ test_requirements = [
 
 setup(
     name='skyscanner',
-    version='1.1.3',
+    version=skyscanner.__version__,
     description="Skyscanner Python SDK",
     long_description=readme + '\n\n' + history,
     author="Ardy Dedase",
