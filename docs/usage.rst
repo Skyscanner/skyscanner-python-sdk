@@ -25,8 +25,8 @@ Get live prices::
             locale='en-GB', 
             originplace='SIN-sky', 
             destinationplace='KUL-sky', 
-            outbounddate='2015-05-28', 
-            inbounddate='2015-05-31', 
+            outbounddate='2017-05-28', 
+            inbounddate='2017-05-31', 
             adults=1).parsed
 
 Flights: Browse Cache
@@ -45,8 +45,8 @@ Cheapest quotes::
             locale='en-GB', 
             originplace='SIN-sky', 
             destinationplace='KUL-sky', 
-            outbounddate='2015-05', 
-            inbounddate='2015-06').parsed
+            outbounddate='2017-05', 
+            inbounddate='2017-06').parsed
 
 Cheapest price by route::
 
@@ -59,8 +59,8 @@ Cheapest price by route::
             locale='en-GB', 
             originplace='SIN-sky', 
             destinationplace='KUL-sky', 
-            outbounddate='2015-05', 
-            inbounddate='2015-06').parsed
+            outbounddate='2017-05', 
+            inbounddate='2017-06').parsed
 
 Cheapest price by date::
 
@@ -73,8 +73,8 @@ Cheapest price by date::
             locale='en-GB', 
             originplace='SIN-sky', 
             destinationplace='KUL-sky', 
-            outbounddate='2015-05', 
-            inbounddate='2015-06').parsed
+            outbounddate='2017-05', 
+            inbounddate='2017-06').parsed
 
 Grid of prices by date::
 
@@ -87,8 +87,8 @@ Grid of prices by date::
             locale='en-GB', 
             originplace='SIN-sky', 
             destinationplace='KUL-sky', 
-            outbounddate='2015-05', 
-            inbounddate='2015-06').parsed
+            outbounddate='2017-05', 
+            inbounddate='2017-06').parsed
 
 Car Hire
 ~~~~~~~~
@@ -106,8 +106,8 @@ Get live prices::
             locale='en-GB', 
             pickupplace='LHR-sky', 
             dropoffplace='LHR-sky', 
-            pickupdatetime='2015-05-29T12:00', 
-            dropoffdatetime='2015-05-29T18:00', 
+            pickupdatetime='2017-05-29T12:00', 
+            dropoffdatetime='2017-05-29T18:00', 
             driverage='30',
             userip='175.156.244.174').parsed
 
@@ -148,7 +148,7 @@ Hotels prices and details::
             currency='GBP', 
             locale='en-GB', 
             entityid=27543923, 
-            checkindate='2015-05-26', 
-            checkoutdate='2015-05-30', 
+            checkindate='2017-05-26', 
+            checkoutdate='2017-05-30', 
             guests=1, 
             rooms=1).parsed

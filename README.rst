@@ -46,13 +46,14 @@ Or, if you have virtualenvwrapper installed::
 Quick start
 -----------
 
-1. Request for an API Key from `Skyscanner for Business Contact Page`_.
-2. Set your API Key::
+1. If you don't already have one, create a `Skyscanner account`_.
+2. Sign into your account and under Add Apps click Travel APIs to create your Travel API key
+3. Set your API Key in your code::
 
     from skyscanner.skyscanner import Flights
     flights_service = Flights('<Your API Key>')
 
-3. Get the flights live pricing result by writing a few lines of code::
+4. Get the flights live pricing result by writing a few lines of code::
 
     from skyscanner.skyscanner import Flights
 
@@ -63,23 +64,24 @@ Quick start
         locale='en-GB',
         originplace='SIN-sky',
         destinationplace='KUL-sky',
-        outbounddate='2016-07-28',
-        inbounddate='2016-07-31',
+        outbounddate='2017-05-28',
+        inbounddate='2017-05-31',
         adults=1).parsed
 
     print(result)
 
 Note that both the ``inbounddate`` and ``outbounddate`` might need to be updated.
 
-.. _Skyscanner for Business Contact Page: http://en.business.skyscanner.net/en-gb/contact/
+.. _Skyscanner account: http://portal.business.skyscanner.net/en-gb/accounts/login/
 
 
 More examples
 -------------
 
-For more example usage, `refer to our documentation`_.
+For more example usage, refer to the `SDK documentation`_ or the `API documentation`_.
 
-.. _refer to our documentation: https://skyscanner.readthedocs.org/en/latest/usage.html
+.. _SDK documentation: https://skyscanner.readthedocs.org/en/latest/usage.html
+.. _API documentation: http://business.skyscanner.net/portal/en-GB/Documentation/ApiOverview
   
 
 Known Issues
@@ -88,4 +90,6 @@ Known Issues
 * Tests might appear to be broken sometimes, this is due to the throttling in the API. In such cases, you will see the following error in the build log::
 
         requests.exceptions.HTTPError: 429 Client Error: Too many requests in the last minute.
+
+** Please allow up to 15 minutes for your API key to be activated. Until it is activated you will get a 403 exception.
     
