@@ -47,7 +47,7 @@ Quick start
 -----------
 
 1. If you don't already have one, create a `Skyscanner account`_.
-2. Sign into your account and under Add Apps click Travel APIs to create your Travel API key
+2. Sign into your account and under Add Apps click Travel APIs to create an API key
 3. Set your API Key in your code::
 
     from skyscanner.skyscanner import Flights
@@ -91,5 +91,8 @@ Known Issues
 
         requests.exceptions.HTTPError: 429 Client Error: Too many requests in the last minute.
 
-** Please allow up to 15 minutes for your API key to be activated. Until it is activated you will get a 403 exception.
+* Please allow up to 15 minutes for your API key to be activated. Until it is activated you will get a 403 exception::
+        
+        requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: http://partners.api.skyscanner.net/apiservices/pricing/v1.0?apiKey=<Your API key>
+
     
