@@ -2,7 +2,8 @@
 Skyscanner Python SDK
 ===============================
 
-You will need to contact us to request an API key to use our APIs. Please use the following form: https://partners.skyscanner.net/contact. 
+You will need to contact us to request an API key to use our APIs via the following form: https://partners.skyscanner.net/contact. 
+
 We receive a large number of requests and although we do our best to reply to all we cannot guarantee that your application will be successful. 
 
 .. image:: https://api.travis-ci.org/Skyscanner/skyscanner-python-sdk.svg
