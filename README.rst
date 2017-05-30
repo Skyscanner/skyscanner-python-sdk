@@ -49,14 +49,15 @@ Or, if you have virtualenvwrapper installed::
 Quick start
 -----------
 
-1. If you don't already have one, create a `Skyscanner account`_.
-2. Sign into your account and under Add Apps click Travel APIs to create an API key
-3. Set your API Key in your code::
+1. Contact us to request an API key: https://partners.skyscanner.net/contact
+2. If you don't already have one, create a `Skyscanner account`_.
+3. Sign into your account and click 'Import Existing App' and use your API key to create an App
+4. Set your API Key in your code::
 
     from skyscanner.skyscanner import Flights
     flights_service = Flights('<Your API Key>')
 
-4. Get the flights live pricing result by writing a few lines of code::
+5. Get the flights live pricing result by writing a few lines of code::
 
     from skyscanner.skyscanner import Flights
 
@@ -75,7 +76,7 @@ Quick start
 
 Note that both the ``inbounddate`` and ``outbounddate`` might need to be updated.
 
-.. _Skyscanner account: http://portal.business.skyscanner.net/en-gb/accounts/login/
+.. _Skyscanner account: https://partners.skyscanner.net/log-in/
 
 
 More examples
@@ -84,7 +85,7 @@ More examples
 For more example usage, refer to the `SDK documentation`_ or the `API documentation`_.
 
 .. _SDK documentation: https://skyscanner.readthedocs.org/en/latest/usage.html
-.. _API documentation: http://business.skyscanner.net/portal/en-GB/Documentation/ApiOverview
+.. _API documentation: https://skyscanner.github.io/slate/
   
 
 Known Issues

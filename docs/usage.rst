@@ -2,7 +2,9 @@
 Usage
 ========
 
-To use Skyscanner Python SDK in a project, make sure that you set your API Key. For example::
+To use Skyscanner Python SDK in a project, you will need to request an API key. Please use the following form: https://partners.skyscanner.net/contact/
+
+Once you have an API key you can set it as follows:
 
         from skyscanner.skyscanner import Flights
         
