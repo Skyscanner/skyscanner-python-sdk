@@ -346,6 +346,12 @@ class Transport(object):
                     response=resp
                 )
 
+            elif resp.status_code == 304:
+                error = requests.HTTPError(
+                    '%sNo changes to the response. Please wait a bit and try again.' % error,
+                    response=resp
+                )
+
         if STRICT == mode:
             raise error
         elif GRACEFUL == mode:
