@@ -26,6 +26,8 @@ import time
 
 import requests
 
+from urllib.parse import urlparse, urlunparse
+
 try:
     import lxml.etree as etree
 except ImportError:
@@ -73,7 +75,8 @@ class Transport(object):
     """
     Parent class for initialization
     """
-    API_HOST = 'http://partners.api.skyscanner.net'
+    MASHAPE_HOST = 'skyscanner-skyscanner-flight-search-v1.p.mashape.com'
+    API_HOST = 'https://' + MASHAPE_HOST
     MARKET_SERVICE_URL = '{api_host}/apiservices/reference/v1.0/countries'\
         .format(api_host=API_HOST)
     LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/autosuggest/v1.0'\
@@ -89,6 +92,7 @@ class Transport(object):
         """
         if not api_key:
             raise ValueError('API key must be specified.')
+
         if response_format.lower() not in self._SUPPORTED_FORMATS:
             raise ValueError(
                 'Unknown response format: {}'.format(response_format) +
@@ -179,17 +183,16 @@ class Transport(object):
         if callback is None:
             callback = self._default_resp_callback
 
-        if 'apikey' not in service_url.lower():
-            params.update({
-                'apiKey': self.api_key
-            })
-
         request = getattr(requests, method.lower())
 
         log.debug('* Request URL: %s' % service_url)
         log.debug('* Request method: %s' % method)
         log.debug('* Request query params: %s' % params)
         log.debug('* Request headers: %s' % headers)
+
+        parsed_url = urlparse(service_url)
+        service_url = urlunparse(
+            parsed_url._replace(scheme='https', netloc=self.MASHAPE_HOST))
 
         r = request(service_url, headers=headers, data=data, params=params)
         try:
@@ -378,7 +381,12 @@ class Transport(object):
         return headers
 
     def _headers(self):
-        return {'Accept': 'application/%s' % self.response_format}
+        headers={
+            "X-Mashape-Key": self.api_key,
+            "X-Mashape-Host": self.API_HOST,
+            'Accept': 'application/%s' % self.response_format
+        }
+        return headers
 
     def _default_resp_callback(self, resp):
         if not resp or not resp.content:
