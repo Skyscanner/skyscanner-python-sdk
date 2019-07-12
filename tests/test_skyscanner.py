@@ -5,7 +5,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__credits__ = ["Ardy Dedase", "Denis Dudnik", "Kelvin Tay"]
+__credits__ = ["Ardy Dedase", "Denis Dudnik", "Kelvin Tay", "Adrian Rodriguez"]
 __copyright__ = "Copyright (C) 2016 Skyscanner Ltd"
 __license__ = """
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,6 +76,10 @@ class FakeResponse(object):
 
 
 class TestTransport(SkyScannerTestCase):
+
+    def test_api_url_uses_secure_url(self):
+        transport = Transport(self.api_key, response_format='json')
+        self.assertTrue(transport.API_HOST.startswith('https://'))
 
     def test_get_markets_json(self):
         transport = Transport(self.api_key, response_format='json')
@@ -343,8 +347,8 @@ class TestTransport(SkyScannerTestCase):
                               t._default_resp_callback,
                               FakeResponse(content='invalid XML')
                               )
-        except:
-            self.assertRaises(Exception,
+        except Exception as e:
+            self.assertRaises(e,
                               t._default_resp_callback,
                               FakeResponse(content='invalid XML')
                               )
@@ -411,7 +415,7 @@ class TestCarHire(SkyScannerTestCase):
 
     def test_get_result_json(self):
         """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+        https://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
         {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
         {pickupdatetime}/{dropoffdatetime}/{driverage}
         ?apiKey={apiKey}&userip={userip}
@@ -436,7 +440,7 @@ class TestCarHire(SkyScannerTestCase):
 
     # def test_get_result_xml(self):
     #     """
-    #     http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+    #     https://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
     #     {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
     #     {pickupdatetime}/{dropoffdatetime}/{driverage}
     #     ?apiKey={apiKey}&userip={userip}
@@ -461,7 +465,7 @@ class TestCarHire(SkyScannerTestCase):
 
     def test_create_session(self):
         """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+        https://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
         {market}/{currency}/{locale}/{pickupplace}/
         {dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}
         ?apiKey={apiKey}&userip={userip}
@@ -521,7 +525,7 @@ class TestHotels(SkyScannerTestCase):
 
     def test_get_result_json(self):
         """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+        https://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
         {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
         {pickupdatetime}/{dropoffdatetime}/{driverage}
         ?apiKey={apiKey}&userip={userip}
@@ -545,7 +549,7 @@ class TestHotels(SkyScannerTestCase):
 
     def test_get_result_xml(self):
         """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+        https://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
         {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
         {pickupdatetime}/{dropoffdatetime}/{driverage}
         ?apiKey={apiKey}&userip={userip}
@@ -569,7 +573,7 @@ class TestHotels(SkyScannerTestCase):
 
     def test_create_session(self):
         """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+        https://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
         {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
         {pickupdatetime}/{dropoffdatetime}/{driverage}
         ?apiKey={apiKey}&userip={userip}
@@ -837,6 +841,7 @@ class TestFlights(SkyScannerTestCase):
         self.assertTrue(self.result.find('./Itineraries') is not None)
         self.assertTrue(
             len(self.result.findall('./Itineraries/ItineraryApiDto')) > 0)
+
 
 if __name__ == '__main__':
     unittest.main()

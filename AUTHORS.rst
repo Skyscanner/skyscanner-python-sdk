@@ -12,3 +12,4 @@ Contributors
 
 * Denis Dudnik <deniska.dudnik@gmail.com>
 * Kelvin Tay <kelvintaywl@gmail.com>
+* Adrian Rodriguez <adrguez@gmail.com>

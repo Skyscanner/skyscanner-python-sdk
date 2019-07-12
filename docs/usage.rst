@@ -14,7 +14,7 @@ Once you have an API key you can set it as follows:
 Flights: Live Pricing
 ~~~~~~~~~~~~~~~~~~~~~
 
-http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingList
+https://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingList
 
 Get live prices::
 
@@ -34,7 +34,7 @@ Get live prices::
 Flights: Browse Cache
 ~~~~~~~~~~~~~~~~~~~~~
 
-http://business.skyscanner.net/portal/en-GB/Documentation/FlightsBrowseCacheOverview
+https://business.skyscanner.net/portal/en-GB/Documentation/FlightsBrowseCacheOverview
 
 Cheapest quotes::
 
@@ -95,7 +95,7 @@ Grid of prices by date::
 Car Hire
 ~~~~~~~~
 
-http://business.skyscanner.net/portal/en-GB/Documentation/CarHireLivePricing
+https://business.skyscanner.net/portal/en-GB/Documentation/CarHireLivePricing
 
 Get live prices::
     
@@ -127,7 +127,7 @@ Car hire autosuggest::
 Hotels
 ~~~~~~
 
-http://business.skyscanner.net/portal/en-GB/Documentation/HotelsOverview
+https://business.skyscanner.net/portal/en-GB/Documentation/HotelsOverview
 
 Hotels autosuggest::
     

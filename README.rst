@@ -24,7 +24,7 @@ Skyscanner Python SDK for Skyscanner's API
 
 * Free software: Apache license
 * SDK Documentation: https://skyscanner.readthedocs.org.
-* API Documentation: http://business.skyscanner.net/portal/en-GB/Documentation/ApiOverview
+* API Documentation: https://business.skyscanner.net/portal/en-GB/Documentation/ApiOverview
 
 
 Features
@@ -98,6 +98,6 @@ Known Issues
 
 * Please allow up to 15 minutes for your API key to be activated. Until it is activated you will get a 403 exception::
         
-        requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: http://partners.api.skyscanner.net/apiservices/pricing/v1.0?apiKey=<Your API key>
+        requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://partners.api.skyscanner.net/apiservices/pricing/v1.0?apiKey=<Your API key>
 
     
