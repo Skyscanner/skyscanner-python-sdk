@@ -73,7 +73,7 @@ class Transport(object):
     """
     Parent class for initialization
     """
-    API_HOST = 'http://partners.api.skyscanner.net'
+    API_HOST = 'https://partners.api.skyscanner.net'
     MARKET_SERVICE_URL = '{api_host}/apiservices/reference/v1.0/countries'\
         .format(api_host=API_HOST)
     LOCATION_AUTOSUGGEST_URL = '{api_host}/apiservices/autosuggest/v1.0'\
@@ -202,7 +202,7 @@ class Transport(object):
     def get_markets(self, market):
         """
         Get the list of markets
-        http://business.skyscanner.net/portal/en-GB/Documentation/Markets
+        https://business.skyscanner.net/portal/en-GB/Documentation/Markets
         """
         url = "{url}/{market}".format(url=self.MARKET_SERVICE_URL,
                                       market=market)
@@ -213,13 +213,13 @@ class Transport(object):
         Location Autosuggest Services
         Doc URLs:
 
-            http://business.skyscanner.net/portal/en-GB/
+            https://business.skyscanner.net/portal/en-GB/
             Documentation/Autosuggest
 
-            http://business.skyscanner.net/portal/en-GB/
+            https://business.skyscanner.net/portal/en-GB/
             Documentation/CarHireAutoSuggest
 
-            http://business.skyscanner.net/portal/en-GB/
+            https://business.skyscanner.net/portal/en-GB/
             Documentation/HotelsAutoSuggest
 
         Format:
@@ -424,7 +424,7 @@ class Flights(Transport):
     Flights Live Pricing
 
     Please see:
-        http://business.skyscanner.net/portal/en-GB/
+        https://business.skyscanner.net/portal/en-GB/
         Documentation/FlightsLivePricingList
     """
 
@@ -465,7 +465,7 @@ class FlightsCache(Flights):
     Flights Browse Cache
 
     Please see:
-        http://business.skyscanner.net/portal/en-GB/
+        https://business.skyscanner.net/portal/en-GB/
         Documentation/FlightsBrowseCacheOverview
     """
 

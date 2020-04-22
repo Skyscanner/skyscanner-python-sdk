@@ -2,9 +2,9 @@
 Skyscanner Python SDK
 ===============================
 
-You will need to contact us to request an API key to use our APIs via the following form: https://partners.skyscanner.net/contact. 
+You will need to contact us to request an API key to use our APIs via the following form: https://partners.skyscanner.net/contact.
 
-We receive a large number of requests and although we do our best to reply to all we cannot guarantee that your application will be successful. 
+We receive a large number of requests and although we do our best to reply to all we cannot guarantee that your application will be successful.
 
 .. image:: https://api.travis-ci.org/Skyscanner/skyscanner-python-sdk.svg
     :target: https://travis-ci.org/Skyscanner/skyscanner-python-sdk
@@ -24,7 +24,7 @@ Skyscanner Python SDK for Skyscanner's API
 
 * Free software: Apache license
 * SDK Documentation: https://skyscanner.readthedocs.org.
-* API Documentation: http://business.skyscanner.net/portal/en-GB/Documentation/ApiOverview
+* API Documentation: https://business.skyscanner.net/portal/en-GB/Documentation/ApiOverview
 
 
 Features
@@ -87,7 +87,7 @@ For more example usage, refer to the `SDK documentation`_ or the `API documentat
 
 .. _SDK documentation: https://skyscanner.readthedocs.org/en/latest/usage.html
 .. _API documentation: https://skyscanner.github.io/slate/
-  
+
 
 Known Issues
 ------------
@@ -97,7 +97,7 @@ Known Issues
         requests.exceptions.HTTPError: 429 Client Error: Too many requests in the last minute.
 
 * Please allow up to 15 minutes for your API key to be activated. Until it is activated you will get a 403 exception::
-        
-        requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: http://partners.api.skyscanner.net/apiservices/pricing/v1.0?apiKey=<Your API key>
 
-    
+        requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://partners.api.skyscanner.net/apiservices/pricing/v1.0?apiKey=<Your API key>
+
+
