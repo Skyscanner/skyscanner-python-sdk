@@ -7,34 +7,34 @@ To use Skyscanner Python SDK in a project, you will need to request an API key. 
 Once you have an API key you can set it as follows:
 
         from skyscanner.skyscanner import Flights
-        
-        flights_service = Flights('<Your API Key>')        
+
+        flights_service = Flights('<Your API Key>')
 
 
 Flights: Live Pricing
 ~~~~~~~~~~~~~~~~~~~~~
 
-http://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingList
+https://business.skyscanner.net/portal/en-GB/Documentation/FlightsLivePricingList
 
 Get live prices::
 
         from skyscanner.skyscanner import Flights
-        
+
         flights_service = Flights('<Your API Key>')
         result = flights_service.get_result(
-            country='UK', 
-            currency='GBP', 
-            locale='en-GB', 
-            originplace='SIN-sky', 
-            destinationplace='KUL-sky', 
-            outbounddate='2017-05-28', 
-            inbounddate='2017-05-31', 
+            country='UK',
+            currency='GBP',
+            locale='en-GB',
+            originplace='SIN-sky',
+            destinationplace='KUL-sky',
+            outbounddate='2017-05-28',
+            inbounddate='2017-05-31',
             adults=1).parsed
 
 Flights: Browse Cache
 ~~~~~~~~~~~~~~~~~~~~~
 
-http://business.skyscanner.net/portal/en-GB/Documentation/FlightsBrowseCacheOverview
+https://business.skyscanner.net/portal/en-GB/Documentation/FlightsBrowseCacheOverview
 
 Cheapest quotes::
 
@@ -43,11 +43,11 @@ Cheapest quotes::
         flights_cache_service = FlightsCache('<Your API Key>')
         result = flights_cache_service.get_cheapest_quotes(
             market='UK',
-            currency='GBP', 
-            locale='en-GB', 
-            originplace='SIN-sky', 
-            destinationplace='KUL-sky', 
-            outbounddate='2017-05', 
+            currency='GBP',
+            locale='en-GB',
+            originplace='SIN-sky',
+            destinationplace='KUL-sky',
+            outbounddate='2017-05',
             inbounddate='2017-06').parsed
 
 Cheapest price by route::
@@ -57,11 +57,11 @@ Cheapest price by route::
         flights_cache_service = FlightsCache('<Your API Key>')
         result = flights_cache_service.get_cheapest_price_by_route(
             market='UK',
-            currency='GBP', 
-            locale='en-GB', 
-            originplace='SIN-sky', 
-            destinationplace='KUL-sky', 
-            outbounddate='2017-05', 
+            currency='GBP',
+            locale='en-GB',
+            originplace='SIN-sky',
+            destinationplace='KUL-sky',
+            outbounddate='2017-05',
             inbounddate='2017-06').parsed
 
 Cheapest price by date::
@@ -71,11 +71,11 @@ Cheapest price by date::
         flights_cache_service = FlightsCache('<Your API Key>')
         result = flights_cache_service.get_cheapest_price_by_date(
             market='UK',
-            currency='GBP', 
-            locale='en-GB', 
-            originplace='SIN-sky', 
-            destinationplace='KUL-sky', 
-            outbounddate='2017-05', 
+            currency='GBP',
+            locale='en-GB',
+            originplace='SIN-sky',
+            destinationplace='KUL-sky',
+            outbounddate='2017-05',
             inbounddate='2017-06').parsed
 
 Grid of prices by date::
@@ -85,31 +85,31 @@ Grid of prices by date::
         flights_cache_service = FlightsCache('<Your API Key>')
         result = flights_cache_service.get_grid_prices_by_date(
             market='UK',
-            currency='GBP', 
-            locale='en-GB', 
-            originplace='SIN-sky', 
-            destinationplace='KUL-sky', 
-            outbounddate='2017-05', 
+            currency='GBP',
+            locale='en-GB',
+            originplace='SIN-sky',
+            destinationplace='KUL-sky',
+            outbounddate='2017-05',
             inbounddate='2017-06').parsed
 
 Car Hire
 ~~~~~~~~
 
-http://business.skyscanner.net/portal/en-GB/Documentation/CarHireLivePricing
+https://business.skyscanner.net/portal/en-GB/Documentation/CarHireLivePricing
 
 Get live prices::
-    
+
         from skyscanner.skyscanner import CarHire
 
         carhire_service = CarHire('<Your API Key>')
         result = carhire_service.get_result(
-            market='UK', 
-            currency='GBP', 
-            locale='en-GB', 
-            pickupplace='LHR-sky', 
-            dropoffplace='LHR-sky', 
-            pickupdatetime='2017-05-29T12:00', 
-            dropoffdatetime='2017-05-29T18:00', 
+            market='UK',
+            currency='GBP',
+            locale='en-GB',
+            pickupplace='LHR-sky',
+            dropoffplace='LHR-sky',
+            pickupdatetime='2017-05-29T12:00',
+            dropoffdatetime='2017-05-29T18:00',
             driverage='30',
             userip='175.156.244.174').parsed
 
@@ -119,25 +119,25 @@ Car hire autosuggest::
 
         carhire_service = CarHire('<Your API Key>')
         result = carhire_service.location_autosuggest(
-            market='UK', 
-            currency='GBP', 
-            locale='en-GB', 
+            market='UK',
+            currency='GBP',
+            locale='en-GB',
             query='Kuala').parsed
 
 Hotels
 ~~~~~~
 
-http://business.skyscanner.net/portal/en-GB/Documentation/HotelsOverview
+https://business.skyscanner.net/portal/en-GB/Documentation/HotelsOverview
 
 Hotels autosuggest::
-    
+
         from skyscanner.skyscanner import Hotels
 
         hotels_service = Hotels('<Your API Key>')
         result = hotels_service.location_autosuggest(
-            market='UK', 
-            currency='GBP', 
-            locale='en-GB', 
+            market='UK',
+            currency='GBP',
+            locale='en-GB',
             query='Kuala').parsed
 
 Hotels prices and details::
@@ -146,11 +146,11 @@ Hotels prices and details::
 
         hotels_service = Hotels(self.api_key)
         result = hotels_service.get_result(
-            market='UK', 
-            currency='GBP', 
-            locale='en-GB', 
-            entityid=27543923, 
-            checkindate='2017-05-26', 
-            checkoutdate='2017-05-30', 
-            guests=1, 
+            market='UK',
+            currency='GBP',
+            locale='en-GB',
+            entityid=27543923,
+            checkindate='2017-05-26',
+            checkoutdate='2017-05-30',
+            guests=1,
             rooms=1).parsed

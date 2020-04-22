@@ -343,8 +343,8 @@ class TestTransport(SkyScannerTestCase):
                               t._default_resp_callback,
                               FakeResponse(content='invalid XML')
                               )
-        except:
-            self.assertRaises(Exception,
+        except Exception as e:
+            self.assertRaises(e,
                               t._default_resp_callback,
                               FakeResponse(content='invalid XML')
                               )
@@ -411,7 +411,7 @@ class TestCarHire(SkyScannerTestCase):
 
     def test_get_result_json(self):
         """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+        https://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
         {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
         {pickupdatetime}/{dropoffdatetime}/{driverage}
         ?apiKey={apiKey}&userip={userip}
@@ -436,7 +436,7 @@ class TestCarHire(SkyScannerTestCase):
 
     # def test_get_result_xml(self):
     #     """
-    #     http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+    #     https://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
     #     {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
     #     {pickupdatetime}/{dropoffdatetime}/{driverage}
     #     ?apiKey={apiKey}&userip={userip}
@@ -461,7 +461,7 @@ class TestCarHire(SkyScannerTestCase):
 
     def test_create_session(self):
         """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+        https://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
         {market}/{currency}/{locale}/{pickupplace}/
         {dropoffplace}/{pickupdatetime}/{dropoffdatetime}/{driverage}
         ?apiKey={apiKey}&userip={userip}
@@ -519,76 +519,78 @@ class TestHotels(SkyScannerTestCase):
         self.assertTrue(
             len(self.result.findall('./Results/HotelResultDto')) > 0)
 
-    def test_get_result_json(self):
-        """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
-        {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
-        {pickupdatetime}/{dropoffdatetime}/{driverage}
-        ?apiKey={apiKey}&userip={userip}
-
-        YYYY-MM-DDThh:mm
-        """
-
-        hotels_service = Hotels(self.api_key, response_format='json')
-        self.result = hotels_service.get_result(
-            market='UK',
-            currency='GBP',
-            locale='en-GB',
-            entityid=27543923,
-            checkindate=self.checkin,
-            checkoutdate=self.checkout,
-            guests=1,
-            rooms=1).parsed
-
-        self.assertTrue('hotels' in self.result)
-        self.assertTrue(len(self.result['hotels']) > 0)
-
-    def test_get_result_xml(self):
-        """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
-        {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
-        {pickupdatetime}/{dropoffdatetime}/{driverage}
-        ?apiKey={apiKey}&userip={userip}
-
-        YYYY-MM-DDThh:mm
-        """
-
-        hotels_service = Hotels(self.api_key, response_format='xml')
-        self.result = hotels_service.get_result(
-            market='DE',
-            currency='EUR',
-            locale='de-DE',
-            entityid=27543923,
-            checkindate=self.checkin,
-            checkoutdate=self.checkout,
-            guests=1,
-            rooms=1).parsed
-
-        self.assertTrue(self.result.find('./Hotels') is not None)
-        self.assertTrue(len(self.result.findall('./Hotels/HotelDto')) > 0)
-
-    def test_create_session(self):
-        """
-        http://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
-        {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
-        {pickupdatetime}/{dropoffdatetime}/{driverage}
-        ?apiKey={apiKey}&userip={userip}
-
-        YYYY-MM-DDThh:mm
-        """
-        hotels_service = Hotels(self.api_key)
-
-        poll_url = hotels_service.create_session(
-            market='UK',
-            currency='GBP',
-            locale='en-GB',
-            entityid=27543923,
-            checkindate=self.checkin,
-            checkoutdate=self.checkout,
-            guests=1,
-            rooms=1)
-
-        self.assertTrue(poll_url)
+    # Tests below are ignored due to deprecated hotel endpoints
+    #
+    # def test_get_result_json(self):
+    #     """
+    #     https://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+    #     {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
+    #     {pickupdatetime}/{dropoffdatetime}/{driverage}
+    #     ?apiKey={apiKey}&userip={userip}
+    #
+    #     YYYY-MM-DDThh:mm
+    #     """
+    #
+    #     hotels_service = Hotels(self.api_key, response_format='json')
+    #     self.result = hotels_service.get_result(
+    #         market='UK',
+    #         currency='GBP',
+    #         locale='en-GB',
+    #         entityid=27543923,
+    #         checkindate=self.checkin,
+    #         checkoutdate=self.checkout,
+    #         guests=1,
+    #         rooms=1).parsed
+    #
+    #     self.assertTrue('hotels' in self.result)
+    #     self.assertTrue(len(self.result['hotels']) > 0)
+    #
+    # def test_get_result_xml(self):
+    #     """
+    #     https://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+    #     {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
+    #     {pickupdatetime}/{dropoffdatetime}/{driverage}
+    #     ?apiKey={apiKey}&userip={userip}
+    #
+    #     YYYY-MM-DDThh:mm
+    #     """
+    #
+    #     hotels_service = Hotels(self.api_key, response_format='xml')
+    #     self.result = hotels_service.get_result(
+    #         market='DE',
+    #         currency='EUR',
+    #         locale='de-DE',
+    #         entityid=27543923,
+    #         checkindate=self.checkin,
+    #         checkoutdate=self.checkout,
+    #         guests=1,
+    #         rooms=1).parsed
+    #
+    #     self.assertTrue(self.result.find('./Hotels') is not None)
+    #     self.assertTrue(len(self.result.findall('./Hotels/HotelDto')) > 0)
+    #
+    # def test_create_session(self):
+    #     """
+    #     https://partners.api.skyscanner.net/apiservices/carhire/liveprices/v2/
+    #     {market}/{currency}/{locale}/{pickupplace}/{dropoffplace}/
+    #     {pickupdatetime}/{dropoffdatetime}/{driverage}
+    #     ?apiKey={apiKey}&userip={userip}
+    #
+    #     YYYY-MM-DDThh:mm
+    #     """
+    #     hotels_service = Hotels(self.api_key)
+    #
+    #     poll_url = hotels_service.create_session(
+    #         market='UK',
+    #         currency='GBP',
+    #         locale='en-GB',
+    #         entityid=27543923,
+    #         checkindate=self.checkin,
+    #         checkoutdate=self.checkout,
+    #         guests=1,
+    #         rooms=1)
+    #
+    #     self.assertTrue(poll_url)
 
 
 class TestFlights(SkyScannerTestCase):
@@ -837,6 +839,7 @@ class TestFlights(SkyScannerTestCase):
         self.assertTrue(self.result.find('./Itineraries') is not None)
         self.assertTrue(
             len(self.result.findall('./Itineraries/ItineraryApiDto')) > 0)
+
 
 if __name__ == '__main__':
     unittest.main()
