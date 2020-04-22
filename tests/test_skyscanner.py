@@ -343,8 +343,8 @@ class TestTransport(SkyScannerTestCase):
                               t._default_resp_callback,
                               FakeResponse(content='invalid XML')
                               )
-        except:
-            self.assertRaises(Exception,
+        except Exception as e:
+            self.assertRaises(e,
                               t._default_resp_callback,
                               FakeResponse(content='invalid XML')
                               )
@@ -839,6 +839,7 @@ class TestFlights(SkyScannerTestCase):
         self.assertTrue(self.result.find('./Itineraries') is not None)
         self.assertTrue(
             len(self.result.findall('./Itineraries/ItineraryApiDto')) > 0)
+
 
 if __name__ == '__main__':
     unittest.main()

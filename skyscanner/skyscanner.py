@@ -45,6 +45,7 @@ def configure_logger(log_level=logging.WARN):
     logger.addHandler(sa)
     return logger
 
+
 log = configure_logger()
 STRICT, GRACEFUL, IGNORE = 'strict', 'graceful', 'ignore'
 
@@ -92,7 +93,7 @@ class Transport(object):
         if response_format.lower() not in self._SUPPORTED_FORMATS:
             raise ValueError(
                 'Unknown response format: {}'.format(response_format) +
-                ', supported formats are '.format(
+                + ', supported formats are '.format(
                     ', '.join(self._SUPPORTED_FORMATS)
                 )
             )
