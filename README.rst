@@ -2,6 +2,14 @@
 Skyscanner Python SDK
 ===============================
 
+Important
+=========
+    As of May 1st, 2020, the project is deprecated and no longer maintained.
+    The latest update in v1.1.5 includes changing the library to use a secure connection when calling Skyscanner's APIs as         this is required for all users and http is no longer supported. The development of this SDK from that point on is fully       abandoned.
+
+    As we cannot guarantee for how long it will continue working, you should not to use the SDK when starting new projects. If     it is already in use in your projects, please upgrade to its latest version and keep in mind that due to planned changes       in our Skyscanner APIs it may not work as expected after July 2020. 
+
+
 You will need to contact us to request an API key to use our APIs via the following form: https://partners.skyscanner.net/contact.
 
 We receive a large number of requests and although we do our best to reply to all we cannot guarantee that your application will be successful.
